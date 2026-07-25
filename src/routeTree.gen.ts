@@ -10,33 +10,141 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardTeacherRouteImport } from './routes/dashboard.teacher'
+import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
+import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
+import { Route as DashboardSecretaryRouteImport } from './routes/dashboard.secretary'
+import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
+import { Route as DashboardAccountantRouteImport } from './routes/dashboard.accountant'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardTeacherRoute = DashboardTeacherRouteImport.update({
+  id: '/dashboard/teacher',
+  path: '/dashboard/teacher',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSuperAdminRoute = DashboardSuperAdminRouteImport.update({
+  id: '/dashboard/super-admin',
+  path: '/dashboard/super-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardStudentRoute = DashboardStudentRouteImport.update({
+  id: '/dashboard/student',
+  path: '/dashboard/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSecretaryRoute = DashboardSecretaryRouteImport.update({
+  id: '/dashboard/secretary',
+  path: '/dashboard/secretary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAdminRoute = DashboardAdminRouteImport.update({
+  id: '/dashboard/admin',
+  path: '/dashboard/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAccountantRoute = DashboardAccountantRouteImport.update({
+  id: '/dashboard/accountant',
+  path: '/dashboard/accountant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/accountant': typeof DashboardAccountantRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/student': typeof DashboardStudentRoute
+  '/dashboard/super-admin': typeof DashboardSuperAdminRoute
+  '/dashboard/teacher': typeof DashboardTeacherRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/accountant': typeof DashboardAccountantRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/student': typeof DashboardStudentRoute
+  '/dashboard/super-admin': typeof DashboardSuperAdminRoute
+  '/dashboard/teacher': typeof DashboardTeacherRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/dashboard/accountant': typeof DashboardAccountantRoute
+  '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/student': typeof DashboardStudentRoute
+  '/dashboard/super-admin': typeof DashboardSuperAdminRoute
+  '/dashboard/teacher': typeof DashboardTeacherRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth/login'
+    | '/auth/register'
+    | '/dashboard/accountant'
+    | '/dashboard/admin'
+    | '/dashboard/secretary'
+    | '/dashboard/student'
+    | '/dashboard/super-admin'
+    | '/dashboard/teacher'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth/login'
+    | '/auth/register'
+    | '/dashboard/accountant'
+    | '/dashboard/admin'
+    | '/dashboard/secretary'
+    | '/dashboard/student'
+    | '/dashboard/super-admin'
+    | '/dashboard/teacher'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth/login'
+    | '/auth/register'
+    | '/dashboard/accountant'
+    | '/dashboard/admin'
+    | '/dashboard/secretary'
+    | '/dashboard/student'
+    | '/dashboard/super-admin'
+    | '/dashboard/teacher'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  DashboardAccountantRoute: typeof DashboardAccountantRoute
+  DashboardAdminRoute: typeof DashboardAdminRoute
+  DashboardSecretaryRoute: typeof DashboardSecretaryRoute
+  DashboardStudentRoute: typeof DashboardStudentRoute
+  DashboardSuperAdminRoute: typeof DashboardSuperAdminRoute
+  DashboardTeacherRoute: typeof DashboardTeacherRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,22 +156,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/teacher': {
+      id: '/dashboard/teacher'
+      path: '/dashboard/teacher'
+      fullPath: '/dashboard/teacher'
+      preLoaderRoute: typeof DashboardTeacherRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/super-admin': {
+      id: '/dashboard/super-admin'
+      path: '/dashboard/super-admin'
+      fullPath: '/dashboard/super-admin'
+      preLoaderRoute: typeof DashboardSuperAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/student': {
+      id: '/dashboard/student'
+      path: '/dashboard/student'
+      fullPath: '/dashboard/student'
+      preLoaderRoute: typeof DashboardStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/secretary': {
+      id: '/dashboard/secretary'
+      path: '/dashboard/secretary'
+      fullPath: '/dashboard/secretary'
+      preLoaderRoute: typeof DashboardSecretaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/admin': {
+      id: '/dashboard/admin'
+      path: '/dashboard/admin'
+      fullPath: '/dashboard/admin'
+      preLoaderRoute: typeof DashboardAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/accountant': {
+      id: '/dashboard/accountant'
+      path: '/dashboard/accountant'
+      fullPath: '/dashboard/accountant'
+      preLoaderRoute: typeof DashboardAccountantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  DashboardAccountantRoute: DashboardAccountantRoute,
+  DashboardAdminRoute: DashboardAdminRoute,
+  DashboardSecretaryRoute: DashboardSecretaryRoute,
+  DashboardStudentRoute: DashboardStudentRoute,
+  DashboardSuperAdminRoute: DashboardSuperAdminRoute,
+  DashboardTeacherRoute: DashboardTeacherRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
