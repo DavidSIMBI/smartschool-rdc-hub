@@ -20,6 +20,7 @@ const dict = {
     "stats.students": "Élèves gérés",
     "stats.teachers": "Enseignants actifs",
     "stats.provinces": "Provinces couvertes",
+    "stats.admins": "Administrateurs actifs",
     "features.title": "Tout ce dont votre école a besoin",
     "features.subtitle": "Un tableau de bord moderne pour chaque rôle. Des données isolées et sécurisées pour chaque école.",
     "features.students": "Gestion des élèves",
