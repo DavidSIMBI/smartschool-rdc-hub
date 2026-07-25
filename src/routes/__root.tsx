@@ -85,9 +85,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "description", content: "SmartSchool RDC : la plateforme cloud tout-en-un pour les écoles primaires et secondaires de la République Démocratique du Congo. Sécurisée, multilingue, moderne." },
       { name: "author", content: "SmartSchool RDC" },
       { property: "og:title", content: "SmartSchool RDC — Plateforme de gestion scolaire" },
-      { property: "og:description", content: "La plateforme cloud tout-en-un pour les écoles de la RDC." },
+      { property: "og:description", content: "SmartSchool RDC : la plateforme cloud tout-en-un pour les écoles primaires et secondaires de la République Démocratique du Congo. Sécurisée, multilingue, moderne." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SmartSchool RDC — Plateforme de gestion scolaire" },
+      { name: "twitter:description", content: "SmartSchool RDC : la plateforme cloud tout-en-un pour les écoles primaires et secondaires de la République Démocratique du Congo. Sécurisée, multilingue, moderne." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e90c0623-1143-4f5d-9492-dffb0f020fff" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/e90c0623-1143-4f5d-9492-dffb0f020fff" },
     ],
     links: [
       {
