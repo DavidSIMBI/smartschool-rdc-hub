@@ -1,0 +1,1 @@
+export const SUPER_ADMIN_EMAIL = "davidsimbilyabo@gmail.com";
