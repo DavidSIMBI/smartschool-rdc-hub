@@ -27,11 +27,22 @@ import { useI18n } from "@/lib/i18n";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { Navbar } from "./Navbar";
 import { Logo } from "./Logo";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getPublicStats } from "@/lib/public-stats.functions";
+import { Skeleton } from "@/components/ui/skeleton";
 import heroImg from "@/assets/hero-classroom.jpg";
 import dashImg from "@/assets/dashboard-preview.jpg";
 
 export function Landing() {
   const { t } = useI18n();
+  const fetchStats = useServerFn(getPublicStats);
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ["public-stats"],
+    queryFn: () => fetchStats(),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+  });
 
   const features = [
     { icon: Users, key: "features.students" },
@@ -140,14 +151,18 @@ export function Landing() {
           {/* Stats */}
           <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { v: 240, s: "+", k: "stats.schools" },
-              { v: 85000, s: "+", k: "stats.students" },
-              { v: 4200, s: "+", k: "stats.teachers" },
-              { v: 26, s: "", k: "stats.provinces" },
+              { v: stats?.schools ?? 0, k: "stats.schools" },
+              { v: stats?.students ?? 0, k: "stats.students" },
+              { v: stats?.teachers ?? 0, k: "stats.teachers" },
+              { v: stats?.admins ?? 0, k: "stats.admins" },
             ].map((s) => (
               <Card key={s.k} className="p-6 text-center border-border/60 hover-scale">
                 <div className="text-3xl sm:text-4xl font-bold text-primary">
-                  <AnimatedCounter value={s.v} suffix={s.s} />
+                  {isLoading ? (
+                    <Skeleton className="mx-auto h-10 w-24" />
+                  ) : (
+                    <AnimatedCounter value={s.v} />
+                  )}
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">{t(s.k as never)}</div>
               </Card>
