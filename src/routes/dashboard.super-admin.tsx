@@ -1,33 +1,35 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Building2, Users, GraduationCap } from "lucide-react";
-import { DashboardShell, StatCard } from "@/components/dashboard/DashboardShell";
-import { supabase } from "@/integrations/supabase/client";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { AccessDenied } from "@/components/super-admin/SuperAdminShell";
 
 export const Route = createFileRoute("/dashboard/super-admin")({
-  head: () => ({ meta: [{ title: "Super Admin — SmartSchool RDC" }, { name: "robots", content: "noindex" }] }),
-  component: SuperAdmin,
+  head: () => ({
+    meta: [
+      { title: "Super Admin — SmartSchool RDC" },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
+  component: SuperAdminLayout,
 });
 
-function SuperAdmin() {
-  const [stats, setStats] = useState({ schools: 0, students: 0, teachers: 0 });
+function SuperAdminLayout() {
+  const { user, roles, loading } = useAuth();
+  const navigate = useNavigate();
   useEffect(() => {
-    (async () => {
-      const [a, b, c] = await Promise.all([
-        supabase.from("schools").select("*", { count: "exact", head: true }),
-        supabase.from("students").select("*", { count: "exact", head: true }),
-        supabase.from("teachers").select("*", { count: "exact", head: true }),
-      ]);
-      setStats({ schools: a.count ?? 0, students: b.count ?? 0, teachers: c.count ?? 0 });
-    })();
-  }, []);
-  return (
-    <DashboardShell title="Plateforme SmartSchool" subtitle="Vue Super Admin">
-      <div className="grid sm:grid-cols-3 gap-4">
-        <StatCard label="Écoles" value={stats.schools} icon={Building2} />
-        <StatCard label="Élèves" value={stats.students} icon={Users} />
-        <StatCard label="Enseignants" value={stats.teachers} icon={GraduationCap} />
+    if (!loading && !user) navigate({ to: "/auth/login" });
+  }, [loading, user, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="animate-pulse text-sm text-muted-foreground">
+          Chargement…
+        </div>
       </div>
-    </DashboardShell>
-  );
+    );
+  }
+  if (!user) return null;
+  if (!roles.includes("super_admin")) return <AccessDenied />;
+  return <Outlet />;
 }

@@ -10,6 +10,8 @@ import { useI18n } from "@/lib/i18n";
 import { dashboardPathFor, type AppRole } from "@/lib/auth-context";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
+import { ensureSuperAdmin } from "@/lib/super-admin.functions";
+import { SUPER_ADMIN_EMAIL } from "@/lib/super-admin.constants";
 
 export const Route = createFileRoute("/auth/login")({
   head: () => ({
@@ -34,6 +36,10 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
+      // Idempotently bootstrap the single super-admin account on first sign-in.
+      if (email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
+        await ensureSuperAdmin({ data: { email: email.trim().toLowerCase() } }).catch(() => null);
+      }
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       const uid = data.user?.id;

@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
+import { SUPER_ADMIN_EMAIL } from "@/lib/super-admin.constants";
 
 export const Route = createFileRoute("/auth/register")({
   head: () => ({
@@ -49,6 +50,10 @@ function RegisterPage() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (form.email.trim().toLowerCase() === SUPER_ADMIN_EMAIL) {
+      toast.error("Cette adresse est réservée à l'administrateur de la plateforme.");
+      return;
+    }
     setLoading(true);
     try {
       const { data: signUp, error: signErr } = await supabase.auth.signUp({
