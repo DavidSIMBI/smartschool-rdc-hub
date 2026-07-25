@@ -114,6 +114,7 @@ const dict = {
     "stats.students": "Students managed",
     "stats.teachers": "Active teachers",
     "stats.provinces": "Provinces covered",
+    "stats.admins": "Active administrators",
     "features.title": "Everything your school needs",
     "features.subtitle": "A modern dashboard for every role. Isolated, secure data for every school.",
     "features.students": "Student management",
