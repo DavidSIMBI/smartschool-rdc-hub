@@ -80,9 +80,9 @@ export function Landing() {
   ];
 
   const plans = [
-    { key: "pricing.starter", price: "$29", features: ["Jusqu'à 200 élèves", "3 comptes staff", "Support email"] },
+    { key: "pricing.starter", price: "$29", features: ["Jusqu'à 200 élèves", "1 comptes staff", "Support email"] },
     { key: "pricing.pro", price: "$79", features: ["Jusqu'à 1 000 élèves", "15 comptes staff", "Bulletins auto", "Support prioritaire"], popular: true },
-    { key: "pricing.enterprise", price: "$199", features: ["Élèves illimités", "Comptes illimités", "SLA + formations", "Domaine personnalisé"] },
+    { key: "pricing.enterprise", price: "$199", features: ["Élèves illimités", "20 comptes staff", "SLA + formations", "Domaine personnalisé"] },
   ];
 
   return (
@@ -352,7 +352,7 @@ export function Landing() {
             <Logo />
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} SmartSchool RDC — {t("footer.rights")}
+            © {new Date().getFullYear()} SmartSchool RDC\u00a0 {t("footer.rights")}
           </p>
         </div>
       </footer>
