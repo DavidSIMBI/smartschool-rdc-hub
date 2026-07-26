@@ -932,11 +932,38 @@ export type Database = {
         }
         Relationships: []
       }
+      student_bookmarks: {
+        Row: {
+          created_at: string
+          id: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          target_id?: string
+          target_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
+          address: string | null
           class_id: string | null
           created_at: string
           date_of_birth: string | null
+          email: string | null
+          emergency_contact: string | null
           first_name: string
           gender: string | null
           guardian_name: string | null
@@ -944,13 +971,19 @@ export type Database = {
           id: string
           last_name: string
           matricule: string | null
+          medical_info: string | null
+          phone: string | null
+          photo_url: string | null
           school_id: string
           user_id: string | null
         }
         Insert: {
+          address?: string | null
           class_id?: string | null
           created_at?: string
           date_of_birth?: string | null
+          email?: string | null
+          emergency_contact?: string | null
           first_name: string
           gender?: string | null
           guardian_name?: string | null
@@ -958,13 +991,19 @@ export type Database = {
           id?: string
           last_name: string
           matricule?: string | null
+          medical_info?: string | null
+          phone?: string | null
+          photo_url?: string | null
           school_id: string
           user_id?: string | null
         }
         Update: {
+          address?: string | null
           class_id?: string | null
           created_at?: string
           date_of_birth?: string | null
+          email?: string | null
+          emergency_contact?: string | null
           first_name?: string
           gender?: string | null
           guardian_name?: string | null
@@ -972,6 +1011,9 @@ export type Database = {
           id?: string
           last_name?: string
           matricule?: string | null
+          medical_info?: string | null
+          phone?: string | null
+          photo_url?: string | null
           school_id?: string
           user_id?: string | null
         }
@@ -1285,6 +1327,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      timetable_slots: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          room: string | null
+          school_id: string
+          start_time: string
+          subject_id: string | null
+          teacher_id: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          room?: string | null
+          school_id: string
+          start_time: string
+          subject_id?: string | null
+          teacher_id?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          room?: string | null
+          school_id?: string
+          start_time?: string
+          subject_id?: string | null
+          teacher_id?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

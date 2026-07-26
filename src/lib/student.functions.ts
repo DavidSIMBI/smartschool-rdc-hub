@@ -1,0 +1,433 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const idSchema = z.object({ id: z.string().uuid() });
+
+async function getStudentRow(supabase: any, userId: string) {
+  const { data } = await supabase
+    .from("students")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data as any;
+}
+
+export const getStudentOverview = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return { student: null, school: null, klass: null, stats: null };
+
+    const [{ data: school }, { data: klass }] = await Promise.all([
+      supabase.from("schools").select("id, name, city, province, logo_url").eq("id", student.school_id).maybeSingle(),
+      student.class_id
+        ? supabase.from("classes").select("id, name, level, academic_year").eq("id", student.class_id).maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
+
+    // Attendance stats
+    const { data: attRecs } = await supabase
+      .from("attendance_records")
+      .select("status")
+      .eq("student_id", student.id);
+    const total = (attRecs ?? []).length;
+    const present = (attRecs ?? []).filter((r: any) => r.status === "present").length;
+    const absent = (attRecs ?? []).filter((r: any) => r.status === "absent").length;
+    const late = (attRecs ?? []).filter((r: any) => r.status === "late").length;
+    const attendancePct = total ? Math.round((present / total) * 100) : 0;
+
+    // Grades average
+    const { data: results } = await supabase
+      .from("exam_results")
+      .select("score, exams(max_score, status)")
+      .eq("student_id", student.id);
+    const graded = (results ?? []).filter((r: any) => r.score !== null && r.exams?.status === "published");
+    const avg = graded.length
+      ? Math.round(
+          (graded.reduce((s: number, r: any) => s + (Number(r.score) / Number(r.exams.max_score || 100)) * 100, 0) / graded.length) * 10
+        ) / 10
+      : 0;
+
+    // Subjects, assignments, upcoming exams, messages
+    let subjectsCount = 0;
+    if (student.class_id) {
+      const { data: tcs } = await supabase
+        .from("teacher_class_subjects")
+        .select("subject_id")
+        .eq("class_id", student.class_id);
+      subjectsCount = new Set((tcs ?? []).map((r: any) => r.subject_id)).size;
+    }
+
+    const [{ data: assignments }, { data: subs }, upExams, unread, ann] = await Promise.all([
+      student.class_id
+        ? supabase.from("assignments").select("id, due_date, status").eq("class_id", student.class_id).eq("status", "open")
+        : Promise.resolve({ data: [] }),
+      supabase.from("assignment_submissions").select("assignment_id, grade").eq("student_id", student.id),
+      student.class_id
+        ? supabase
+            .from("exams")
+            .select("id", { count: "exact", head: true })
+            .eq("class_id", student.class_id)
+            .eq("status", "draft")
+        : Promise.resolve({ count: 0 }),
+      supabase.from("messages").select("id", { count: "exact", head: true }).eq("recipient_id", context.userId).is("read_at", null),
+      supabase.from("announcements").select("id", { count: "exact", head: true }).eq("school_id", student.school_id),
+    ]);
+
+    const submittedIds = new Set((subs ?? []).map((s: any) => s.assignment_id));
+    const pending = (assignments ?? []).filter((a: any) => !submittedIds.has(a.id)).length;
+    const completed = (subs ?? []).length;
+
+    return {
+      student,
+      school,
+      klass,
+      stats: {
+        attendancePct,
+        present,
+        absent,
+        late,
+        totalDays: total,
+        avg,
+        subjects: subjectsCount,
+        pending,
+        completed,
+        upcomingExams: (upExams as any).count ?? 0,
+        unreadMessages: (unread as any).count ?? 0,
+        announcements: (ann as any).count ?? 0,
+      },
+    };
+  });
+
+export const listStudentSubjects = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student?.class_id) return [];
+    const { data: tcs } = await supabase
+      .from("teacher_class_subjects")
+      .select("weekly_hours, subjects(id, name, code), teachers(first_name, last_name)")
+      .eq("class_id", student.class_id);
+
+    // Attach current subject average from published exams
+    const { data: results } = await supabase
+      .from("exam_results")
+      .select("score, exams(subject_id, max_score, status)")
+      .eq("student_id", student.id);
+    const bySubject: Record<string, { total: number; n: number }> = {};
+    for (const r of (results ?? []) as any[]) {
+      if (r.exams?.status !== "published") continue;
+      const sid = r.exams?.subject_id;
+      if (!sid) continue;
+      const pct = (Number(r.score) / Number(r.exams.max_score || 100)) * 100;
+      bySubject[sid] = bySubject[sid] || { total: 0, n: 0 };
+      bySubject[sid].total += pct;
+      bySubject[sid].n += 1;
+    }
+    return (tcs ?? []).map((row: any) => {
+      const sid = row.subjects?.id;
+      const agg = sid ? bySubject[sid] : null;
+      return {
+        ...row,
+        average: agg && agg.n ? Math.round((agg.total / agg.n) * 10) / 10 : null,
+      };
+    });
+  });
+
+export const listStudentAssignments = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student?.class_id) return [];
+    const [{ data: assignments }, { data: subs }] = await Promise.all([
+      supabase
+        .from("assignments")
+        .select("*, subjects(name), teachers(first_name, last_name)")
+        .eq("class_id", student.class_id)
+        .order("due_date", { ascending: true, nullsFirst: false }),
+      supabase.from("assignment_submissions").select("*").eq("student_id", student.id),
+    ]);
+    const bySub: Record<string, any> = {};
+    for (const s of (subs ?? []) as any[]) bySub[s.assignment_id] = s;
+    return (assignments ?? []).map((a: any) => ({ ...a, submission: bySub[a.id] ?? null }));
+  });
+
+const submitSchema = z.object({
+  assignment_id: z.string().uuid(),
+  content: z.string().optional().nullable(),
+  file_url: z.string().optional().nullable(),
+});
+
+export const submitAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => submitSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) throw new Error("Student profile not found");
+    const { error } = await supabase.from("assignment_submissions").upsert(
+      {
+        assignment_id: data.assignment_id,
+        student_id: student.id,
+        content: data.content ?? null,
+        file_url: data.file_url ?? null,
+        submitted_at: new Date().toISOString(),
+      },
+      { onConflict: "assignment_id,student_id" as any },
+    );
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const listStudentExams = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student?.class_id) return { exams: [], results: [] };
+    const [{ data: exams }, { data: results }] = await Promise.all([
+      supabase
+        .from("exams")
+        .select("*, subjects(name)")
+        .eq("class_id", student.class_id)
+        .order("exam_date", { ascending: false, nullsFirst: false }),
+      supabase.from("exam_results").select("*").eq("student_id", student.id),
+    ]);
+    return { exams: exams ?? [], results: results ?? [] };
+  });
+
+export const getStudentReportCard = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return null;
+    const { data: results } = await supabase
+      .from("exam_results")
+      .select("score, grade, position, comment, exams(title, term, max_score, exam_date, subjects(name), status)")
+      .eq("student_id", student.id);
+    const rows = (results ?? []).filter((r: any) => r.exams?.status === "published");
+    return { student, rows };
+  });
+
+export const listStudentAttendance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return [];
+    const { data } = await supabase
+      .from("attendance_records")
+      .select("status, attendance_sessions(session_date, subjects(name), classes(name))")
+      .eq("student_id", student.id)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return data ?? [];
+  });
+
+export const listStudentTimetable = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student?.class_id) return [];
+    const { data } = await supabase
+      .from("timetable_slots")
+      .select("*, subjects(name), teachers(first_name, last_name)")
+      .eq("class_id", student.class_id)
+      .order("day_of_week")
+      .order("start_time");
+    return data ?? [];
+  });
+
+export const listStudentAnnouncements = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return [];
+    const { data } = await supabase
+      .from("announcements")
+      .select("*")
+      .eq("school_id", student.school_id)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    return data ?? [];
+  });
+
+export const listStudentMessages = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    const [{ data: inbox }, { data: sent }] = await Promise.all([
+      supabase.from("messages").select("*").eq("recipient_id", context.userId).order("created_at", { ascending: false }).limit(50),
+      supabase.from("messages").select("*").eq("sender_id", context.userId).order("created_at", { ascending: false }).limit(50),
+    ]);
+    // Recipients: teachers of the student's class + school admins/secretaries
+    let recipients: any[] = [];
+    if (student?.school_id) {
+      const { data: staff } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .eq("school_id", student.school_id)
+        .neq("id", context.userId);
+      recipients = staff ?? [];
+    }
+    return { inbox: inbox ?? [], sent: sent ?? [], recipients };
+  });
+
+const msgSchema = z.object({
+  recipient_id: z.string().uuid(),
+  subject: z.string().optional().nullable(),
+  body: z.string().min(1),
+});
+
+export const sendStudentMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => msgSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) throw new Error("Student profile not found");
+    const { error } = await supabase.from("messages").insert({
+      school_id: student.school_id,
+      sender_id: context.userId,
+      recipient_id: data.recipient_id,
+      subject: data.subject ?? null,
+      body: data.body,
+    });
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const markMessageRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase
+      .from("messages")
+      .update({ read_at: new Date().toISOString() })
+      .eq("id", data.id)
+      .eq("recipient_id", context.userId);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const listStudentMaterials = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return [];
+    const filters: any[] = [`class_id.eq.${student.class_id}`, "class_id.is.null"];
+    const { data } = await supabase
+      .from("teacher_documents")
+      .select("*, subjects(name), teachers(first_name, last_name)")
+      .eq("school_id", student.school_id)
+      .or(filters.join(","))
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return data ?? [];
+  });
+
+export const listStudentBookmarks = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const { data } = await supabase.from("student_bookmarks").select("*").eq("user_id", context.userId);
+    return data ?? [];
+  });
+
+const bookmarkSchema = z.object({
+  target_type: z.string(),
+  target_id: z.string().uuid(),
+  action: z.enum(["add", "remove"]),
+});
+
+export const toggleBookmark = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => bookmarkSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    if (data.action === "add") {
+      const { error } = await supabase.from("student_bookmarks").upsert(
+        { user_id: context.userId, target_type: data.target_type, target_id: data.target_id },
+        { onConflict: "user_id,target_type,target_id" as any },
+      );
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from("student_bookmarks")
+        .delete()
+        .eq("user_id", context.userId)
+        .eq("target_type", data.target_type)
+        .eq("target_id", data.target_id);
+      if (error) throw error;
+    }
+    return { ok: true };
+  });
+
+const chatSchema = z.object({
+  messages: z.array(z.object({ role: z.enum(["user", "assistant", "system"]), content: z.string() })),
+});
+
+export const askStudentAssistant = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => chatSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI non configuré");
+
+    const systemPrompt = `Tu es l'assistant pédagogique de SmartSchool RDC pour un élève${
+      student?.class_id ? ` de la classe ${student.class_id}` : ""
+    }. Réponds en français par défaut (ou dans la langue de l'élève). Sois bienveillant, clair, et concis. Aide à comprendre les devoirs, planifier les révisions, expliquer des concepts et donner des conseils d'étude. Ne partage jamais d'informations d'autres élèves.`;
+
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": key,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3.6-flash",
+        messages: [{ role: "system", content: systemPrompt }, ...data.messages],
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      if (res.status === 429) throw new Error("Limite atteinte, réessayez plus tard.");
+      if (res.status === 402) throw new Error("Crédits IA épuisés.");
+      throw new Error(`AI error: ${text}`);
+    }
+    const json = await res.json();
+    const reply = json.choices?.[0]?.message?.content ?? "";
+    return { reply };
+  });
+
+const profilePrefsSchema = z.object({
+  photo_url: z.string().optional().nullable(),
+});
+
+export const updateStudentPhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => profilePrefsSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) throw new Error("Student not found");
+    const { error } = await supabase
+      .from("students")
+      .update({ photo_url: data.photo_url ?? null })
+      .eq("id", student.id)
+      .eq("user_id", context.userId);
+    if (error) throw error;
+    return { ok: true };
+  });
