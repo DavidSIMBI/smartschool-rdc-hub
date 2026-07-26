@@ -15,13 +15,15 @@ function TeacherLayout() {
         navigate({ to: "/auth/login" });
         return;
       }
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id);
+      const [{ data: roles }, { data: teacherRow }] = await Promise.all([
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+        supabase.from("teachers").select("id").eq("user_id", user.id).maybeSingle(),
+      ]);
       if (cancel) return;
-      const allowed = (roles ?? []).some((r) => r.role === "teacher" || r.role === "school_admin" || r.role === "super_admin");
-      setState(allowed ? "ok" : "denied");
+      const hasRole = (roles ?? []).some((r) =>
+        r.role === "teacher" || r.role === "school_admin" || r.role === "super_admin",
+      );
+      setState(hasRole || teacherRow ? "ok" : "denied");
     })();
     return () => { cancel = true; };
   }, [navigate]);
