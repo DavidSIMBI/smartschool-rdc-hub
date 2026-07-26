@@ -1,27 +1,51 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, Users, ClipboardList } from "lucide-react";
-import { DashboardShell, StatCard } from "@/components/dashboard/DashboardShell";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { TeacherAccessDenied } from "@/components/dashboard/TeacherShell";
+
+function TeacherLayout() {
+  const navigate = useNavigate();
+  const [state, setState] = useState<"loading" | "ok" | "denied">("loading");
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate({ to: "/auth/login" });
+        return;
+      }
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+      if (cancel) return;
+      const allowed = (roles ?? []).some((r) => r.role === "teacher" || r.role === "school_admin" || r.role === "super_admin");
+      setState(allowed ? "ok" : "denied");
+    })();
+    return () => { cancel = true; };
+  }, [navigate]);
+
+  if (state === "loading") {
+    return (
+      <div className="min-h-screen grid place-items-center bg-background">
+        <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+  if (state === "denied") return <TeacherAccessDenied />;
+  return <Outlet />;
+}
 
 export const Route = createFileRoute("/dashboard/teacher")({
   head: () => ({
     meta: [
       { title: "Espace enseignant — SmartSchool RDC" },
-      { name: "description", content: "Consultez vos classes, matières et élèves assignés, et gérez vos activités pédagogiques quotidiennes." },
+      { name: "description", content: "Cockpit enseignant : classes, présences, devoirs, examens, plans de leçon, messages et calendrier." },
       { property: "og:title", content: "Espace enseignant — SmartSchool RDC" },
-      { property: "og:description", content: "Vos classes, matières et élèves dans un espace dédié aux enseignants." },
+      { property: "og:description", content: "Cockpit enseignant : classes, présences, devoirs, examens et messages." },
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: () => (
-    <DashboardShell title="Espace enseignant" subtitle="Vos classes et matières">
-      <div className="grid sm:grid-cols-3 gap-4">
-        <StatCard label="Mes classes" value={0} icon={ClipboardList} />
-        <StatCard label="Mes matières" value={0} icon={BookOpen} />
-        <StatCard label="Mes élèves" value={0} icon={Users} />
-      </div>
-      <div className="mt-6 rounded-2xl border border-border bg-background p-6">
-        <p className="text-sm text-muted-foreground">Bienvenue. Les données seront disponibles lorsque votre directeur vous aura assigné à des classes.</p>
-      </div>
-    </DashboardShell>
-  ),
+  component: TeacherLayout,
 });
