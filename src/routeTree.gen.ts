@@ -41,6 +41,7 @@ import { Route as DashboardSuperAdminAuditRouteImport } from './routes/dashboard
 import { Route as DashboardSuperAdminAnnouncementsRouteImport } from './routes/dashboard.super-admin.announcements'
 import { Route as DashboardStudentSubjectsRouteImport } from './routes/dashboard.student.subjects'
 import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
+import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
 import { Route as DashboardSuperAdminSchoolsIdRouteImport } from './routes/dashboard.super-admin.schools.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -220,6 +221,12 @@ const DashboardStudentProfileRoute = DashboardStudentProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentAssignmentsRoute =
+  DashboardStudentAssignmentsRouteImport.update({
+    id: '/assignments',
+    path: '/assignments',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardSuperAdminSchoolsIdRoute =
   DashboardSuperAdminSchoolsIdRouteImport.update({
     id: '/$id',
@@ -237,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
@@ -269,6 +277,7 @@ export interface FileRoutesByTo {
   '/dashboard/accountant': typeof DashboardAccountantRoute
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
@@ -305,6 +314,7 @@ export interface FileRoutesById {
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
+  '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/dashboard/super-admin'
     | '/dashboard/teacher'
+    | '/dashboard/student/assignments'
     | '/dashboard/student/profile'
     | '/dashboard/student/subjects'
     | '/dashboard/super-admin/announcements'
@@ -374,6 +385,7 @@ export interface FileRouteTypes {
     | '/dashboard/accountant'
     | '/dashboard/admin'
     | '/dashboard/secretary'
+    | '/dashboard/student/assignments'
     | '/dashboard/student/profile'
     | '/dashboard/student/subjects'
     | '/dashboard/super-admin/announcements'
@@ -409,6 +421,7 @@ export interface FileRouteTypes {
     | '/dashboard/student'
     | '/dashboard/super-admin'
     | '/dashboard/teacher'
+    | '/dashboard/student/assignments'
     | '/dashboard/student/profile'
     | '/dashboard/student/subjects'
     | '/dashboard/super-admin/announcements'
@@ -673,6 +686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentProfileRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/assignments': {
+      id: '/dashboard/student/assignments'
+      path: '/assignments'
+      fullPath: '/dashboard/student/assignments'
+      preLoaderRoute: typeof DashboardStudentAssignmentsRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/super-admin/schools/$id': {
       id: '/dashboard/super-admin/schools/$id'
       path: '/$id'
@@ -684,12 +704,14 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardStudentRouteChildren {
+  DashboardStudentAssignmentsRoute: typeof DashboardStudentAssignmentsRoute
   DashboardStudentProfileRoute: typeof DashboardStudentProfileRoute
   DashboardStudentSubjectsRoute: typeof DashboardStudentSubjectsRoute
   DashboardStudentIndexRoute: typeof DashboardStudentIndexRoute
 }
 
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
+  DashboardStudentAssignmentsRoute: DashboardStudentAssignmentsRoute,
   DashboardStudentProfileRoute: DashboardStudentProfileRoute,
   DashboardStudentSubjectsRoute: DashboardStudentSubjectsRoute,
   DashboardStudentIndexRoute: DashboardStudentIndexRoute,
