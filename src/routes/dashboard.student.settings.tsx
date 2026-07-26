@@ -6,13 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/lib/theme";
 import { useI18n } from "@/lib/i18n";
 
 export const Route = createFileRoute("/dashboard/student/settings")({ component: SettingsPage });
 
 function SettingsPage() {
-  const { theme, setTheme } = useTheme();
+  const { theme, toggle } = useTheme();
   const { lang, setLang } = useI18n();
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
@@ -35,11 +35,8 @@ function SettingsPage() {
         <section className="rounded-2xl border border-border bg-background/70 backdrop-blur-sm p-5">
           <h3 className="font-semibold mb-4">Apparence</h3>
           <div className="flex gap-2">
-            {["light", "dark", "system"].map((t) => (
-              <Button key={t} variant={theme === t ? "default" : "outline"} size="sm" onClick={() => setTheme(t)}>
-                {t === "light" ? "Clair" : t === "dark" ? "Sombre" : "Système"}
-              </Button>
-            ))}
+            <Button variant={theme === "light" ? "default" : "outline"} size="sm" onClick={() => theme === "dark" && toggle()}>Clair</Button>
+            <Button variant={theme === "dark" ? "default" : "outline"} size="sm" onClick={() => theme === "light" && toggle()}>Sombre</Button>
           </div>
         </section>
 
