@@ -100,6 +100,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
     ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "SmartSchool RDC",
+          url: "https://smartschool-rdc-hub.lovable.app",
+          logo: "https://smartschool-rdc-hub.lovable.app/favicon.ico",
+          description:
+            "Plateforme cloud de gestion scolaire pour les écoles primaires et secondaires de la République Démocratique du Congo.",
+          areaServed: "CD",
+        }),
+      },
+    ],
   }),
   shellComponent: RootShell,
   component: RootComponent,
