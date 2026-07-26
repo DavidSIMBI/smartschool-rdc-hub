@@ -1,0 +1,11 @@
+# SmartSchool RDC
+
+> Plateforme cloud tout-en-un de gestion scolaire pour les écoles primaires et secondaires de la République Démocratique du Congo. Sécurisée, multilingue (français/anglais), isolation multi-tenant par école.
+
+SmartSchool RDC permet aux directeurs d'école de gérer élèves, enseignants, classes, matières, présences, examens, bulletins, frais et annonces depuis une interface moderne. Chaque école dispose d'un espace complètement isolé.
+
+## Pages
+
+- [Accueil](/): Présentation de la plateforme, fonctionnalités, tarifs et FAQ.
+- [Inscription école](/auth/register): Créer un espace pour une nouvelle école.
+- [Connexion](/auth/login): Accès pour administrateurs, enseignants et élèves.
