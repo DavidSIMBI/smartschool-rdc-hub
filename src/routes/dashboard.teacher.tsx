@@ -3,7 +3,15 @@ import { BookOpen, Users, ClipboardList } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/dashboard/teacher")({
-  head: () => ({ meta: [{ title: "Espace enseignant — SmartSchool RDC" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Espace enseignant — SmartSchool RDC" },
+      { name: "description", content: "Consultez vos classes, matières et élèves assignés, et gérez vos activités pédagogiques quotidiennes." },
+      { property: "og:title", content: "Espace enseignant — SmartSchool RDC" },
+      { property: "og:description", content: "Vos classes, matières et élèves dans un espace dédié aux enseignants." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: () => (
     <DashboardShell title="Espace enseignant" subtitle="Vos classes et matières">
       <div className="grid sm:grid-cols-3 gap-4">

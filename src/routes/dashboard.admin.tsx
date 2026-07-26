@@ -9,7 +9,9 @@ export const Route = createFileRoute("/dashboard/admin")({
   head: () => ({
     meta: [
       { title: "Tableau de bord — SmartSchool RDC" },
-      { name: "description", content: "Tableau de bord administrateur SmartSchool RDC." },
+      { name: "description", content: "Espace administrateur de votre école : suivez élèves, enseignants, classes et annonces en temps réel." },
+      { property: "og:title", content: "Tableau de bord administrateur — SmartSchool RDC" },
+      { property: "og:description", content: "Pilotez votre école : élèves, enseignants, classes, présences et annonces en un seul espace sécurisé." },
       { name: "robots", content: "noindex" },
     ],
   }),

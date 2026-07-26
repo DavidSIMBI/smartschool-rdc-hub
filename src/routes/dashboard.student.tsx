@@ -3,7 +3,15 @@ import { FileText, CalendarCheck, Megaphone } from "lucide-react";
 import { DashboardShell, StatCard } from "@/components/dashboard/DashboardShell";
 
 export const Route = createFileRoute("/dashboard/student")({
-  head: () => ({ meta: [{ title: "Espace élève — SmartSchool RDC" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Espace élève — SmartSchool RDC" },
+      { name: "description", content: "Suivez votre moyenne, votre présence et les annonces de votre école depuis votre espace élève." },
+      { property: "og:title", content: "Espace élève — SmartSchool RDC" },
+      { property: "og:description", content: "Moyenne, présence et annonces : votre scolarité au quotidien." },
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: () => (
     <DashboardShell title="Espace élève" subtitle="Bienvenue">
       <div className="grid sm:grid-cols-3 gap-4">
