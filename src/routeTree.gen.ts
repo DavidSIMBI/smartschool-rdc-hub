@@ -18,6 +18,7 @@ import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardAccountantRouteImport } from './routes/dashboard.accountant'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as DashboardTeacherIndexRouteImport } from './routes/dashboard.teacher.index'
 import { Route as DashboardSuperAdminIndexRouteImport } from './routes/dashboard.super-admin.index'
 import { Route as DashboardSuperAdminSubscriptionsRouteImport } from './routes/dashboard.super-admin.subscriptions'
 import { Route as DashboardSuperAdminSettingsRouteImport } from './routes/dashboard.super-admin.settings'
@@ -72,6 +73,11 @@ const AuthLoginRoute = AuthLoginRouteImport.update({
   id: '/auth/login',
   path: '/auth/login',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardTeacherIndexRoute = DashboardTeacherIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardTeacherRoute,
 } as any)
 const DashboardSuperAdminIndexRoute =
   DashboardSuperAdminIndexRouteImport.update({
@@ -137,7 +143,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student': typeof DashboardStudentRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
-  '/dashboard/teacher': typeof DashboardTeacherRoute
+  '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
   '/dashboard/super-admin/audit': typeof DashboardSuperAdminAuditRoute
   '/dashboard/super-admin/notifications': typeof DashboardSuperAdminNotificationsRoute
@@ -146,6 +152,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
+  '/dashboard/teacher/': typeof DashboardTeacherIndexRoute
   '/dashboard/super-admin/schools/$id': typeof DashboardSuperAdminSchoolsIdRoute
 }
 export interface FileRoutesByTo {
@@ -156,7 +163,6 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student': typeof DashboardStudentRoute
-  '/dashboard/teacher': typeof DashboardTeacherRoute
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
   '/dashboard/super-admin/audit': typeof DashboardSuperAdminAuditRoute
   '/dashboard/super-admin/notifications': typeof DashboardSuperAdminNotificationsRoute
@@ -165,6 +171,7 @@ export interface FileRoutesByTo {
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminIndexRoute
+  '/dashboard/teacher': typeof DashboardTeacherIndexRoute
   '/dashboard/super-admin/schools/$id': typeof DashboardSuperAdminSchoolsIdRoute
 }
 export interface FileRoutesById {
@@ -177,7 +184,7 @@ export interface FileRoutesById {
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student': typeof DashboardStudentRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
-  '/dashboard/teacher': typeof DashboardTeacherRoute
+  '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/super-admin/announcements': typeof DashboardSuperAdminAnnouncementsRoute
   '/dashboard/super-admin/audit': typeof DashboardSuperAdminAuditRoute
   '/dashboard/super-admin/notifications': typeof DashboardSuperAdminNotificationsRoute
@@ -186,6 +193,7 @@ export interface FileRoutesById {
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
+  '/dashboard/teacher/': typeof DashboardTeacherIndexRoute
   '/dashboard/super-admin/schools/$id': typeof DashboardSuperAdminSchoolsIdRoute
 }
 export interface FileRouteTypes {
@@ -208,6 +216,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/super-admin/'
+    | '/dashboard/teacher/'
     | '/dashboard/super-admin/schools/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -218,7 +227,6 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/secretary'
     | '/dashboard/student'
-    | '/dashboard/teacher'
     | '/dashboard/super-admin/announcements'
     | '/dashboard/super-admin/audit'
     | '/dashboard/super-admin/notifications'
@@ -227,6 +235,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/super-admin'
+    | '/dashboard/teacher'
     | '/dashboard/super-admin/schools/$id'
   id:
     | '__root__'
@@ -247,6 +256,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/super-admin/'
+    | '/dashboard/teacher/'
     | '/dashboard/super-admin/schools/$id'
   fileRoutesById: FileRoutesById
 }
@@ -259,7 +269,7 @@ export interface RootRouteChildren {
   DashboardSecretaryRoute: typeof DashboardSecretaryRoute
   DashboardStudentRoute: typeof DashboardStudentRoute
   DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
-  DashboardTeacherRoute: typeof DashboardTeacherRoute
+  DashboardTeacherRoute: typeof DashboardTeacherRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -326,6 +336,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth/login'
       preLoaderRoute: typeof AuthLoginRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/teacher/': {
+      id: '/dashboard/teacher/'
+      path: '/'
+      fullPath: '/dashboard/teacher/'
+      preLoaderRoute: typeof DashboardTeacherIndexRouteImport
+      parentRoute: typeof DashboardTeacherRoute
     }
     '/dashboard/super-admin/': {
       id: '/dashboard/super-admin/'
@@ -432,6 +449,17 @@ const DashboardSuperAdminRouteChildren: DashboardSuperAdminRouteChildren = {
 const DashboardSuperAdminRouteWithChildren =
   DashboardSuperAdminRoute._addFileChildren(DashboardSuperAdminRouteChildren)
 
+interface DashboardTeacherRouteChildren {
+  DashboardTeacherIndexRoute: typeof DashboardTeacherIndexRoute
+}
+
+const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
+  DashboardTeacherIndexRoute: DashboardTeacherIndexRoute,
+}
+
+const DashboardTeacherRouteWithChildren =
+  DashboardTeacherRoute._addFileChildren(DashboardTeacherRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthLoginRoute: AuthLoginRoute,
@@ -441,7 +469,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardSecretaryRoute: DashboardSecretaryRoute,
   DashboardStudentRoute: DashboardStudentRoute,
   DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
-  DashboardTeacherRoute: DashboardTeacherRoute,
+  DashboardTeacherRoute: DashboardTeacherRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
