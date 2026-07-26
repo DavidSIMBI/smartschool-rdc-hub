@@ -26,6 +26,7 @@ import { Route as DashboardTeacherLessonPlansRouteImport } from './routes/dashbo
 import { Route as DashboardTeacherExamsRouteImport } from './routes/dashboard.teacher.exams'
 import { Route as DashboardTeacherDocumentsRouteImport } from './routes/dashboard.teacher.documents'
 import { Route as DashboardTeacherClassesRouteImport } from './routes/dashboard.teacher.classes'
+import { Route as DashboardTeacherCalendarRouteImport } from './routes/dashboard.teacher.calendar'
 import { Route as DashboardTeacherAttendanceRouteImport } from './routes/dashboard.teacher.attendance'
 import { Route as DashboardTeacherAssignmentsRouteImport } from './routes/dashboard.teacher.assignments'
 import { Route as DashboardSuperAdminSubscriptionsRouteImport } from './routes/dashboard.super-admin.subscriptions'
@@ -127,6 +128,12 @@ const DashboardTeacherClassesRoute = DashboardTeacherClassesRouteImport.update({
   path: '/classes',
   getParentRoute: () => DashboardTeacherRoute,
 } as any)
+const DashboardTeacherCalendarRoute =
+  DashboardTeacherCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => DashboardTeacherRoute,
+  } as any)
 const DashboardTeacherAttendanceRoute =
   DashboardTeacherAttendanceRouteImport.update({
     id: '/attendance',
@@ -207,6 +214,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
+  '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
@@ -234,6 +242,7 @@ export interface FileRoutesByTo {
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
+  '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
@@ -264,6 +273,7 @@ export interface FileRoutesById {
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
+  '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
@@ -295,6 +305,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
+    | '/dashboard/teacher/calendar'
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
@@ -322,6 +333,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
+    | '/dashboard/teacher/calendar'
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
@@ -351,6 +363,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/subscriptions'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
+    | '/dashboard/teacher/calendar'
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
@@ -495,6 +508,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTeacherClassesRouteImport
       parentRoute: typeof DashboardTeacherRoute
     }
+    '/dashboard/teacher/calendar': {
+      id: '/dashboard/teacher/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/teacher/calendar'
+      preLoaderRoute: typeof DashboardTeacherCalendarRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
     '/dashboard/teacher/attendance': {
       id: '/dashboard/teacher/attendance'
       path: '/attendance'
@@ -610,6 +630,7 @@ const DashboardSuperAdminRouteWithChildren =
 interface DashboardTeacherRouteChildren {
   DashboardTeacherAssignmentsRoute: typeof DashboardTeacherAssignmentsRoute
   DashboardTeacherAttendanceRoute: typeof DashboardTeacherAttendanceRoute
+  DashboardTeacherCalendarRoute: typeof DashboardTeacherCalendarRoute
   DashboardTeacherClassesRoute: typeof DashboardTeacherClassesRoute
   DashboardTeacherDocumentsRoute: typeof DashboardTeacherDocumentsRoute
   DashboardTeacherExamsRoute: typeof DashboardTeacherExamsRoute
@@ -622,6 +643,7 @@ interface DashboardTeacherRouteChildren {
 const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
   DashboardTeacherAssignmentsRoute: DashboardTeacherAssignmentsRoute,
   DashboardTeacherAttendanceRoute: DashboardTeacherAttendanceRoute,
+  DashboardTeacherCalendarRoute: DashboardTeacherCalendarRoute,
   DashboardTeacherClassesRoute: DashboardTeacherClassesRoute,
   DashboardTeacherDocumentsRoute: DashboardTeacherDocumentsRoute,
   DashboardTeacherExamsRoute: DashboardTeacherExamsRoute,
