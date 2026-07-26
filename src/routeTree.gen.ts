@@ -48,6 +48,7 @@ import { Route as DashboardStudentMessagesRouteImport } from './routes/dashboard
 import { Route as DashboardStudentMaterialsRouteImport } from './routes/dashboard.student.materials'
 import { Route as DashboardStudentExamsRouteImport } from './routes/dashboard.student.exams'
 import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboard.student.attendance'
+import { Route as DashboardStudentAssistantRouteImport } from './routes/dashboard.student.assistant'
 import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
 import { Route as DashboardStudentAnnouncementsRouteImport } from './routes/dashboard.student.announcements'
 import { Route as DashboardSuperAdminSchoolsIdRouteImport } from './routes/dashboard.super-admin.schools.$id'
@@ -270,6 +271,12 @@ const DashboardStudentAttendanceRoute =
     path: '/attendance',
     getParentRoute: () => DashboardStudentRoute,
   } as any)
+const DashboardStudentAssistantRoute =
+  DashboardStudentAssistantRouteImport.update({
+    id: '/assistant',
+    path: '/assistant',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardStudentAssignmentsRoute =
   DashboardStudentAssignmentsRouteImport.update({
     id: '/assignments',
@@ -301,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
@@ -342,6 +350,7 @@ export interface FileRoutesByTo {
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
@@ -387,6 +396,7 @@ export interface FileRoutesById {
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
+  '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
@@ -433,6 +443,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
+    | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
@@ -474,6 +485,7 @@ export interface FileRouteTypes {
     | '/dashboard/secretary'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
+    | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
@@ -518,6 +530,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
+    | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
@@ -838,6 +851,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentAttendanceRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/assistant': {
+      id: '/dashboard/student/assistant'
+      path: '/assistant'
+      fullPath: '/dashboard/student/assistant'
+      preLoaderRoute: typeof DashboardStudentAssistantRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/assignments': {
       id: '/dashboard/student/assignments'
       path: '/assignments'
@@ -865,6 +885,7 @@ declare module '@tanstack/react-router' {
 interface DashboardStudentRouteChildren {
   DashboardStudentAnnouncementsRoute: typeof DashboardStudentAnnouncementsRoute
   DashboardStudentAssignmentsRoute: typeof DashboardStudentAssignmentsRoute
+  DashboardStudentAssistantRoute: typeof DashboardStudentAssistantRoute
   DashboardStudentAttendanceRoute: typeof DashboardStudentAttendanceRoute
   DashboardStudentExamsRoute: typeof DashboardStudentExamsRoute
   DashboardStudentMaterialsRoute: typeof DashboardStudentMaterialsRoute
@@ -880,6 +901,7 @@ interface DashboardStudentRouteChildren {
 const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentAnnouncementsRoute: DashboardStudentAnnouncementsRoute,
   DashboardStudentAssignmentsRoute: DashboardStudentAssignmentsRoute,
+  DashboardStudentAssistantRoute: DashboardStudentAssistantRoute,
   DashboardStudentAttendanceRoute: DashboardStudentAttendanceRoute,
   DashboardStudentExamsRoute: DashboardStudentExamsRoute,
   DashboardStudentMaterialsRoute: DashboardStudentMaterialsRoute,
