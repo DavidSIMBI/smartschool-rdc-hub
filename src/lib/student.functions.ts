@@ -401,6 +401,87 @@ export const listStudentBookmarks = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+const searchSchema = z.object({ q: z.string().min(1).max(120) });
+
+export const searchStudent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => searchSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) {
+      return { subjects: [], assignments: [], materials: [], announcements: [], messages: [] };
+    }
+    const q = data.q.trim();
+    const like = `%${q.replace(/[%_]/g, (m) => `\\${m}`)}%`;
+    const classId = student.class_id;
+
+    const subjectsP = classId
+      ? supabase
+          .from("teacher_class_subjects")
+          .select("subjects(id, name, code)")
+          .eq("class_id", classId)
+      : Promise.resolve({ data: [] });
+
+    const assignmentsP = classId
+      ? supabase
+          .from("assignments")
+          .select("id, title, instructions, due_date, status, subjects(name)")
+          .eq("class_id", classId)
+          .or(`title.ilike.${like},instructions.ilike.${like}`)
+          .order("due_date", { ascending: false, nullsFirst: false })
+          .limit(20)
+      : Promise.resolve({ data: [] });
+
+    const materialsP = supabase
+      .from("teacher_documents")
+      .select("id, name, kind, url, created_at, subjects(name)")
+      .eq("school_id", student.school_id)
+      .or(`class_id.eq.${classId ?? "00000000-0000-0000-0000-000000000000"},class_id.is.null`)
+      .ilike("name", like)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const announcementsP = supabase
+      .from("announcements")
+      .select("id, title, body, created_at")
+      .eq("school_id", student.school_id)
+      .or(`title.ilike.${like},body.ilike.${like}`)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const messagesP = supabase
+      .from("messages")
+      .select("id, subject, body, created_at, sender_id, recipient_id, read_at")
+      .or(`sender_id.eq.${context.userId},recipient_id.eq.${context.userId}`)
+      .or(`subject.ilike.${like},body.ilike.${like}`)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const [subjRes, aRes, mRes, anRes, msgRes] = await Promise.all([
+      subjectsP,
+      assignmentsP,
+      materialsP,
+      announcementsP,
+      messagesP,
+    ]);
+
+    const needle = q.toLowerCase();
+    const subjects = (((subjRes as any).data ?? []) as any[])
+      .map((r) => r.subjects)
+      .filter((s: any) => s && (s.name?.toLowerCase().includes(needle) || s.code?.toLowerCase().includes(needle)))
+      .filter((s: any, i: number, arr: any[]) => arr.findIndex((x) => x.id === s.id) === i)
+      .slice(0, 20);
+
+    return {
+      subjects,
+      assignments: (aRes as any).data ?? [],
+      materials: (mRes as any).data ?? [],
+      announcements: (anRes as any).data ?? [],
+      messages: (msgRes as any).data ?? [],
+    };
+  });
+
 const bookmarkSchema = z.object({
   target_type: z.string(),
   target_id: z.string().uuid(),
