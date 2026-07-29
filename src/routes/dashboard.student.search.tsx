@@ -1,18 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { z } from "zod";
-import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { StudentShell } from "@/components/dashboard/StudentShell";
 import { searchStudent } from "@/lib/student.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, BookOpen, ClipboardList, FolderOpen, Megaphone, MessageSquare } from "lucide-react";
 
-const schema = z.object({ q: fallback(z.string(), "").default("") });
-
 export const Route = createFileRoute("/dashboard/student/search")({
-  validateSearch: zodValidator(schema),
+  validateSearch: (s: Record<string, unknown>): { q: string } => ({
+    q: typeof s.q === "string" ? s.q : "",
+  }),
   head: () => ({
     meta: [
       { title: "Recherche — Espace élève | SmartSchool RDC" },
