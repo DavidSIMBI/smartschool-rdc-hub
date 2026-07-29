@@ -244,6 +244,63 @@ export const listStudentTimetable = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const getStudentCalendar = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return { classesToday: [], exams: [], assignments: [], events: [] };
+
+    const today = new Date();
+    const dow = today.getDay(); // 0=Sunday
+    const in90 = new Date(today.getTime() + 90 * 86400000).toISOString();
+    const todayISO = today.toISOString().slice(0, 10);
+
+    const [classesToday, exams, assignments, events] = await Promise.all([
+      student.class_id
+        ? supabase
+            .from("timetable_slots")
+            .select("id, start_time, end_time, room, subjects(name), teachers(first_name, last_name)")
+            .eq("class_id", student.class_id)
+            .eq("day_of_week", dow)
+            .order("start_time")
+        : Promise.resolve({ data: [] }),
+      student.class_id
+        ? supabase
+            .from("exams")
+            .select("id, title, exam_date, term, subjects(name)")
+            .eq("class_id", student.class_id)
+            .gte("exam_date", todayISO)
+            .order("exam_date", { ascending: true })
+            .limit(50)
+        : Promise.resolve({ data: [] }),
+      student.class_id
+        ? supabase
+            .from("assignments")
+            .select("id, title, due_date, status, subjects(name)")
+            .eq("class_id", student.class_id)
+            .eq("status", "open")
+            .gte("due_date", today.toISOString())
+            .lte("due_date", in90)
+            .order("due_date", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase
+        .from("calendar_events")
+        .select("id, title, description, kind, starts_at, ends_at, audience")
+        .eq("school_id", student.school_id)
+        .gte("starts_at", today.toISOString())
+        .order("starts_at", { ascending: true })
+        .limit(100),
+    ]);
+
+    return {
+      classesToday: (classesToday as any).data ?? [],
+      exams: (exams as any).data ?? [],
+      assignments: (assignments as any).data ?? [],
+      events: (events as any).data ?? [],
+    };
+  });
+
 export const listStudentAnnouncements = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

@@ -48,6 +48,7 @@ import { Route as DashboardStudentNotificationsRouteImport } from './routes/dash
 import { Route as DashboardStudentMessagesRouteImport } from './routes/dashboard.student.messages'
 import { Route as DashboardStudentMaterialsRouteImport } from './routes/dashboard.student.materials'
 import { Route as DashboardStudentExamsRouteImport } from './routes/dashboard.student.exams'
+import { Route as DashboardStudentCalendarRouteImport } from './routes/dashboard.student.calendar'
 import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboard.student.attendance'
 import { Route as DashboardStudentAssistantRouteImport } from './routes/dashboard.student.assistant'
 import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
@@ -272,6 +273,12 @@ const DashboardStudentExamsRoute = DashboardStudentExamsRouteImport.update({
   path: '/exams',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentCalendarRoute =
+  DashboardStudentCalendarRouteImport.update({
+    id: '/calendar',
+    path: '/calendar',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardStudentAttendanceRoute =
   DashboardStudentAttendanceRouteImport.update({
     id: '/attendance',
@@ -317,6 +324,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
   '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
@@ -360,6 +368,7 @@ export interface FileRoutesByTo {
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
   '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
@@ -407,6 +416,7 @@ export interface FileRoutesById {
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
   '/dashboard/student/attendance': typeof DashboardStudentAttendanceRoute
+  '/dashboard/student/calendar': typeof DashboardStudentCalendarRoute
   '/dashboard/student/exams': typeof DashboardStudentExamsRoute
   '/dashboard/student/materials': typeof DashboardStudentMaterialsRoute
   '/dashboard/student/messages': typeof DashboardStudentMessagesRoute
@@ -455,6 +465,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
     | '/dashboard/student/messages'
@@ -498,6 +509,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
     | '/dashboard/student/messages'
@@ -544,6 +556,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
     | '/dashboard/student/attendance'
+    | '/dashboard/student/calendar'
     | '/dashboard/student/exams'
     | '/dashboard/student/materials'
     | '/dashboard/student/messages'
@@ -864,6 +877,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentExamsRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/calendar': {
+      id: '/dashboard/student/calendar'
+      path: '/calendar'
+      fullPath: '/dashboard/student/calendar'
+      preLoaderRoute: typeof DashboardStudentCalendarRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/attendance': {
       id: '/dashboard/student/attendance'
       path: '/attendance'
@@ -907,6 +927,7 @@ interface DashboardStudentRouteChildren {
   DashboardStudentAssignmentsRoute: typeof DashboardStudentAssignmentsRoute
   DashboardStudentAssistantRoute: typeof DashboardStudentAssistantRoute
   DashboardStudentAttendanceRoute: typeof DashboardStudentAttendanceRoute
+  DashboardStudentCalendarRoute: typeof DashboardStudentCalendarRoute
   DashboardStudentExamsRoute: typeof DashboardStudentExamsRoute
   DashboardStudentMaterialsRoute: typeof DashboardStudentMaterialsRoute
   DashboardStudentMessagesRoute: typeof DashboardStudentMessagesRoute
@@ -924,6 +945,7 @@ const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentAssignmentsRoute: DashboardStudentAssignmentsRoute,
   DashboardStudentAssistantRoute: DashboardStudentAssistantRoute,
   DashboardStudentAttendanceRoute: DashboardStudentAttendanceRoute,
+  DashboardStudentCalendarRoute: DashboardStudentCalendarRoute,
   DashboardStudentExamsRoute: DashboardStudentExamsRoute,
   DashboardStudentMaterialsRoute: DashboardStudentMaterialsRoute,
   DashboardStudentMessagesRoute: DashboardStudentMessagesRoute,
