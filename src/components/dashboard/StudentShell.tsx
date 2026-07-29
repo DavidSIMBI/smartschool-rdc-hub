@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { type ReactNode, useState, type FormEvent } from "react";
 import { Link, useNavigate, useLocation } from "@tanstack/react-router";
 import {
   LayoutDashboard,
@@ -18,9 +18,11 @@ import {
   Settings,
   LogOut,
   ShieldAlert,
+  Search,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
 import { useAuth } from "@/lib/auth-context";
@@ -59,6 +61,14 @@ export function StudentShell({
   const { signOut, user } = useAuth();
   const navigate = useNavigate();
   const loc = useLocation();
+  const [q, setQ] = useState("");
+
+  const onSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const query = q.trim();
+    if (!query) return;
+    navigate({ to: "/dashboard/student/search", search: { q: query } });
+  };
 
   return (
     <div className="min-h-screen flex bg-secondary/30">
@@ -108,6 +118,17 @@ export function StudentShell({
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
           <div className="flex items-center gap-3">
+            <form onSubmit={onSearch} className="hidden md:flex relative">
+              <Search className="h-4 w-4 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+              <Input
+                type="search"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Rechercher…"
+                aria-label="Recherche globale"
+                className="pl-8 h-9 w-64"
+              />
+            </form>
             {actions}
             <span className="hidden sm:inline text-sm text-muted-foreground">{user?.email}</span>
             <LangThemeToggle />
