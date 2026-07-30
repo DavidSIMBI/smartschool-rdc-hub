@@ -60,30 +60,42 @@ export type Database = {
       }
       announcements: {
         Row: {
+          attachment_url: string | null
           audience: string | null
           author_id: string | null
           body: string | null
           created_at: string
           id: string
+          image_url: string | null
+          publish_at: string | null
           school_id: string
+          status: string
           title: string
         }
         Insert: {
+          attachment_url?: string | null
           audience?: string | null
           author_id?: string | null
           body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
+          publish_at?: string | null
           school_id: string
+          status?: string
           title: string
         }
         Update: {
+          attachment_url?: string | null
           audience?: string | null
           author_id?: string | null
           body?: string | null
           created_at?: string
           id?: string
+          image_url?: string | null
+          publish_at?: string | null
           school_id?: string
+          status?: string
           title?: string
         }
         Relationships: [
@@ -402,27 +414,33 @@ export type Database = {
       classes: {
         Row: {
           academic_year: string | null
+          class_teacher_id: string | null
           created_at: string
           id: string
           level: string | null
           name: string
           school_id: string
+          section: string | null
         }
         Insert: {
           academic_year?: string | null
+          class_teacher_id?: string | null
           created_at?: string
           id?: string
           level?: string | null
           name: string
           school_id: string
+          section?: string | null
         }
         Update: {
           academic_year?: string | null
+          class_teacher_id?: string | null
           created_at?: string
           id?: string
           level?: string | null
           name?: string
           school_id?: string
+          section?: string | null
         }
         Relationships: [
           {
@@ -590,6 +608,102 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fee_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          fee_structure_id: string | null
+          id: string
+          method: string | null
+          note: string | null
+          paid_at: string
+          receipt_no: string | null
+          reference: string | null
+          school_id: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          fee_structure_id?: string | null
+          id?: string
+          method?: string | null
+          note?: string | null
+          paid_at?: string
+          receipt_no?: string | null
+          reference?: string | null
+          school_id: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          fee_structure_id?: string | null
+          id?: string
+          method?: string | null
+          note?: string | null
+          paid_at?: string
+          receipt_no?: string | null
+          reference?: string | null
+          school_id?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fee_structures: {
+        Row: {
+          academic_year: string | null
+          amount: number
+          class_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          due_date: string | null
+          id: string
+          name: string
+          school_id: string
+          term: string | null
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          amount?: number
+          class_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name: string
+          school_id: string
+          term?: string | null
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          amount?: number
+          class_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string
+          school_id?: string
+          term?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       lesson_plans: {
         Row: {
@@ -883,52 +997,100 @@ export type Database = {
       }
       schools: {
         Row: {
+          academic_year: string | null
+          accent_color: string | null
           address: string | null
           city: string
+          cover_url: string | null
           created_at: string
+          currency: string
+          current_term: string | null
           email: string | null
+          facebook: string | null
           id: string
+          locale: string
           logo_url: string | null
+          motto: string | null
           name: string
           phone: string | null
+          primary_color: string | null
           principal_name: string | null
           province: string
+          secondary_color: string | null
+          signature_url: string | null
           slug: string | null
+          stamp_url: string | null
           status: string
           subscription_plan: string
+          territory: string | null
+          timezone: string
           updated_at: string
+          website: string | null
+          whatsapp: string | null
         }
         Insert: {
+          academic_year?: string | null
+          accent_color?: string | null
           address?: string | null
           city: string
+          cover_url?: string | null
           created_at?: string
+          currency?: string
+          current_term?: string | null
           email?: string | null
+          facebook?: string | null
           id?: string
+          locale?: string
           logo_url?: string | null
+          motto?: string | null
           name: string
           phone?: string | null
+          primary_color?: string | null
           principal_name?: string | null
           province: string
+          secondary_color?: string | null
+          signature_url?: string | null
           slug?: string | null
+          stamp_url?: string | null
           status?: string
           subscription_plan?: string
+          territory?: string | null
+          timezone?: string
           updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Update: {
+          academic_year?: string | null
+          accent_color?: string | null
           address?: string | null
           city?: string
+          cover_url?: string | null
           created_at?: string
+          currency?: string
+          current_term?: string | null
           email?: string | null
+          facebook?: string | null
           id?: string
+          locale?: string
           logo_url?: string | null
+          motto?: string | null
           name?: string
           phone?: string | null
+          primary_color?: string | null
           principal_name?: string | null
           province?: string
+          secondary_color?: string | null
+          signature_url?: string | null
           slug?: string | null
+          stamp_url?: string | null
           status?: string
           subscription_plan?: string
+          territory?: string | null
+          timezone?: string
           updated_at?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
       }
@@ -975,6 +1137,7 @@ export type Database = {
           phone: string | null
           photo_url: string | null
           school_id: string
+          status: string
           user_id: string | null
         }
         Insert: {
@@ -995,6 +1158,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           school_id: string
+          status?: string
           user_id?: string | null
         }
         Update: {
@@ -1015,6 +1179,7 @@ export type Database = {
           phone?: string | null
           photo_url?: string | null
           school_id?: string
+          status?: string
           user_id?: string | null
         }
         Relationships: [
@@ -1292,8 +1457,11 @@ export type Database = {
           id: string
           last_name: string
           phone: string | null
+          photo_url: string | null
+          qualification: string | null
           school_id: string
           specialty: string | null
+          status: string
           user_id: string | null
         }
         Insert: {
@@ -1303,8 +1471,11 @@ export type Database = {
           id?: string
           last_name: string
           phone?: string | null
+          photo_url?: string | null
+          qualification?: string | null
           school_id: string
           specialty?: string | null
+          status?: string
           user_id?: string | null
         }
         Update: {
@@ -1314,8 +1485,11 @@ export type Database = {
           id?: string
           last_name?: string
           phone?: string | null
+          photo_url?: string | null
+          qualification?: string | null
           school_id?: string
           specialty?: string | null
+          status?: string
           user_id?: string | null
         }
         Relationships: [
