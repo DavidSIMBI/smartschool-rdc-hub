@@ -166,12 +166,15 @@ function TeachersPage() {
                   <td className="py-2 pr-3">
                     <div className="flex justify-end gap-1">
                       <Button size="icon" variant="ghost" title="Voir" onClick={() => setView(t)}><Eye className="h-4 w-4" /></Button>
-                      <Button size="icon" variant="ghost" title="Modifier" onClick={() => setForm({
-                        ...empty, ...t,
-                        subjectIds: Array.from(new Set((t.links ?? []).map((l: any) => l.subject_id).filter(Boolean))) as string[],
-                        classIds: Array.from(new Set((t.links ?? []).map((l: any) => l.class_id).filter(Boolean))) as string[],
-                        createAccount: false, tempPassword: randomPassword(),
-                      }, setOpen(true))}><Pencil className="h-4 w-4" /></Button>
+                      <Button size="icon" variant="ghost" title="Modifier" onClick={() => {
+                        setForm({
+                          ...empty, ...t,
+                          subjectIds: Array.from(new Set((t.links ?? []).map((l: any) => l.subject_id).filter(Boolean))) as string[],
+                          classIds: Array.from(new Set((t.links ?? []).map((l: any) => l.class_id).filter(Boolean))) as string[],
+                          createAccount: false, tempPassword: randomPassword(),
+                        });
+                        setOpen(true);
+                      }}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Réinitialiser le mot de passe" onClick={() => { const p = randomPassword(12); resetPwd.mutate({ id: t.id, password: p }); }}><KeyRound className="h-4 w-4" /></Button>
                       {(t.status ?? "active") === "active" ? (
                         <Button size="icon" variant="ghost" title="Désactiver" onClick={() => toggle.mutate({ id: t.id, status: "inactive" })}><Ban className="h-4 w-4" /></Button>
