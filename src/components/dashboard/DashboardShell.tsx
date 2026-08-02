@@ -10,6 +10,7 @@ import {
   Wallet,
   Clock,
   Megaphone,
+  Settings,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -34,6 +35,7 @@ export const commonNav: NavItem[] = [
   { to: "/dashboard/fees", label: "Frais", icon: Wallet },
   { to: "/dashboard/timetable", label: "Emploi du temps", icon: Clock },
   { to: "/dashboard/announcements", label: "Annonces", icon: Megaphone },
+  { to: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
 export function DashboardShell({ title, subtitle, nav = commonNav, children }: { title: string; subtitle?: string; nav?: NavItem[]; children: ReactNode }) {
