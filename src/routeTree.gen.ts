@@ -16,6 +16,8 @@ import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.supe
 import { Route as DashboardStudentsRouteImport } from './routes/dashboard.students'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
 import { Route as DashboardSecretaryRouteImport } from './routes/dashboard.secretary'
+import { Route as DashboardClassesRouteImport } from './routes/dashboard.classes'
+import { Route as DashboardAttendanceRouteImport } from './routes/dashboard.attendance'
 import { Route as DashboardAdminRouteImport } from './routes/dashboard.admin'
 import { Route as DashboardAccountantRouteImport } from './routes/dashboard.accountant'
 import { Route as AuthRegisterRouteImport } from './routes/auth.register'
@@ -91,6 +93,16 @@ const DashboardStudentRoute = DashboardStudentRouteImport.update({
 const DashboardSecretaryRoute = DashboardSecretaryRouteImport.update({
   id: '/dashboard/secretary',
   path: '/dashboard/secretary',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardClassesRoute = DashboardClassesRouteImport.update({
+  id: '/dashboard/classes',
+  path: '/dashboard/classes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardAttendanceRoute = DashboardAttendanceRouteImport.update({
+  id: '/dashboard/attendance',
+  path: '/dashboard/attendance',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardAdminRoute = DashboardAdminRouteImport.update({
@@ -334,6 +346,8 @@ export interface FileRoutesByFullPath {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/accountant': typeof DashboardAccountantRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/attendance': typeof DashboardAttendanceRoute
+  '/dashboard/classes': typeof DashboardClassesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/students': typeof DashboardStudentsRoute
@@ -384,6 +398,8 @@ export interface FileRoutesByTo {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/accountant': typeof DashboardAccountantRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/attendance': typeof DashboardAttendanceRoute
+  '/dashboard/classes': typeof DashboardClassesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/teachers': typeof DashboardTeachersRoute
@@ -432,6 +448,8 @@ export interface FileRoutesById {
   '/auth/register': typeof AuthRegisterRoute
   '/dashboard/accountant': typeof DashboardAccountantRoute
   '/dashboard/admin': typeof DashboardAdminRoute
+  '/dashboard/attendance': typeof DashboardAttendanceRoute
+  '/dashboard/classes': typeof DashboardClassesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/students': typeof DashboardStudentsRoute
@@ -484,6 +502,8 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/accountant'
     | '/dashboard/admin'
+    | '/dashboard/attendance'
+    | '/dashboard/classes'
     | '/dashboard/secretary'
     | '/dashboard/student'
     | '/dashboard/students'
@@ -534,6 +554,8 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/accountant'
     | '/dashboard/admin'
+    | '/dashboard/attendance'
+    | '/dashboard/classes'
     | '/dashboard/secretary'
     | '/dashboard/students'
     | '/dashboard/teachers'
@@ -581,6 +603,8 @@ export interface FileRouteTypes {
     | '/auth/register'
     | '/dashboard/accountant'
     | '/dashboard/admin'
+    | '/dashboard/attendance'
+    | '/dashboard/classes'
     | '/dashboard/secretary'
     | '/dashboard/student'
     | '/dashboard/students'
@@ -632,6 +656,8 @@ export interface RootRouteChildren {
   AuthRegisterRoute: typeof AuthRegisterRoute
   DashboardAccountantRoute: typeof DashboardAccountantRoute
   DashboardAdminRoute: typeof DashboardAdminRoute
+  DashboardAttendanceRoute: typeof DashboardAttendanceRoute
+  DashboardClassesRoute: typeof DashboardClassesRoute
   DashboardSecretaryRoute: typeof DashboardSecretaryRoute
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DashboardStudentsRoute: typeof DashboardStudentsRoute
@@ -689,6 +715,20 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/secretary'
       fullPath: '/dashboard/secretary'
       preLoaderRoute: typeof DashboardSecretaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/classes': {
+      id: '/dashboard/classes'
+      path: '/dashboard/classes'
+      fullPath: '/dashboard/classes'
+      preLoaderRoute: typeof DashboardClassesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/attendance': {
+      id: '/dashboard/attendance'
+      path: '/dashboard/attendance'
+      fullPath: '/dashboard/attendance'
+      preLoaderRoute: typeof DashboardAttendanceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/admin': {
@@ -1100,6 +1140,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRegisterRoute: AuthRegisterRoute,
   DashboardAccountantRoute: DashboardAccountantRoute,
   DashboardAdminRoute: DashboardAdminRoute,
+  DashboardAttendanceRoute: DashboardAttendanceRoute,
+  DashboardClassesRoute: DashboardClassesRoute,
   DashboardSecretaryRoute: DashboardSecretaryRoute,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DashboardStudentsRoute: DashboardStudentsRoute,
