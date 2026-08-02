@@ -171,7 +171,7 @@ function TeachersPage() {
                         subjectIds: Array.from(new Set((t.links ?? []).map((l: any) => l.subject_id).filter(Boolean))) as string[],
                         classIds: Array.from(new Set((t.links ?? []).map((l: any) => l.class_id).filter(Boolean))) as string[],
                         createAccount: false, tempPassword: randomPassword(),
-                      })}><Pencil className="h-4 w-4" /></Button>
+                      }, setOpen(true))}><Pencil className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" title="Réinitialiser le mot de passe" onClick={() => { const p = randomPassword(12); resetPwd.mutate({ id: t.id, password: p }); }}><KeyRound className="h-4 w-4" /></Button>
                       {(t.status ?? "active") === "active" ? (
                         <Button size="icon" variant="ghost" title="Désactiver" onClick={() => toggle.mutate({ id: t.id, status: "inactive" })}><Ban className="h-4 w-4" /></Button>

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardTeachersRouteImport } from './routes/dashboard.teachers'
 import { Route as DashboardTeacherRouteImport } from './routes/dashboard.teacher'
 import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
 import { Route as DashboardStudentsRouteImport } from './routes/dashboard.students'
@@ -60,6 +61,11 @@ import { Route as DashboardSuperAdminSchoolsIdRouteImport } from './routes/dashb
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardTeachersRoute = DashboardTeachersRouteImport.update({
+  id: '/dashboard/teachers',
+  path: '/dashboard/teachers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardTeacherRoute = DashboardTeacherRouteImport.update({
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
+  '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -379,6 +386,7 @@ export interface FileRoutesByTo {
   '/dashboard/admin': typeof DashboardAdminRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
   '/dashboard/students': typeof DashboardStudentsRoute
+  '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -429,6 +437,7 @@ export interface FileRoutesById {
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
+  '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -480,6 +489,7 @@ export interface FileRouteTypes {
     | '/dashboard/students'
     | '/dashboard/super-admin'
     | '/dashboard/teacher'
+    | '/dashboard/teachers'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -526,6 +536,7 @@ export interface FileRouteTypes {
     | '/dashboard/admin'
     | '/dashboard/secretary'
     | '/dashboard/students'
+    | '/dashboard/teachers'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -575,6 +586,7 @@ export interface FileRouteTypes {
     | '/dashboard/students'
     | '/dashboard/super-admin'
     | '/dashboard/teacher'
+    | '/dashboard/teachers'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -625,6 +637,7 @@ export interface RootRouteChildren {
   DashboardStudentsRoute: typeof DashboardStudentsRoute
   DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
   DashboardTeacherRoute: typeof DashboardTeacherRouteWithChildren
+  DashboardTeachersRoute: typeof DashboardTeachersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -634,6 +647,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/teachers': {
+      id: '/dashboard/teachers'
+      path: '/dashboard/teachers'
+      fullPath: '/dashboard/teachers'
+      preLoaderRoute: typeof DashboardTeachersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/teacher': {
@@ -1085,6 +1105,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardStudentsRoute: DashboardStudentsRoute,
   DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
   DashboardTeacherRoute: DashboardTeacherRouteWithChildren,
+  DashboardTeachersRoute: DashboardTeachersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
