@@ -16,6 +16,7 @@ import { Route as DashboardTeacherRouteImport } from './routes/dashboard.teacher
 import { Route as DashboardSuperAdminRouteImport } from './routes/dashboard.super-admin'
 import { Route as DashboardStudentsRouteImport } from './routes/dashboard.students'
 import { Route as DashboardStudentRouteImport } from './routes/dashboard.student'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardSecretaryRouteImport } from './routes/dashboard.secretary'
 import { Route as DashboardFeesRouteImport } from './routes/dashboard.fees'
 import { Route as DashboardExamsRouteImport } from './routes/dashboard.exams'
@@ -97,6 +98,11 @@ const DashboardStudentsRoute = DashboardStudentsRouteImport.update({
 const DashboardStudentRoute = DashboardStudentRouteImport.update({
   id: '/dashboard/student',
   path: '/dashboard/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/dashboard/settings',
+  path: '/dashboard/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardSecretaryRoute = DashboardSecretaryRouteImport.update({
@@ -376,6 +382,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/exams': typeof DashboardExamsRoute
   '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
@@ -432,6 +439,7 @@ export interface FileRoutesByTo {
   '/dashboard/exams': typeof DashboardExamsRoute
   '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/dashboard/exams': typeof DashboardExamsRoute
   '/dashboard/fees': typeof DashboardFeesRoute
   '/dashboard/secretary': typeof DashboardSecretaryRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/student': typeof DashboardStudentRouteWithChildren
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminRouteWithChildren
@@ -544,6 +553,7 @@ export interface FileRouteTypes {
     | '/dashboard/exams'
     | '/dashboard/fees'
     | '/dashboard/secretary'
+    | '/dashboard/settings'
     | '/dashboard/student'
     | '/dashboard/students'
     | '/dashboard/super-admin'
@@ -600,6 +610,7 @@ export interface FileRouteTypes {
     | '/dashboard/exams'
     | '/dashboard/fees'
     | '/dashboard/secretary'
+    | '/dashboard/settings'
     | '/dashboard/students'
     | '/dashboard/teachers'
     | '/dashboard/timetable'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/dashboard/exams'
     | '/dashboard/fees'
     | '/dashboard/secretary'
+    | '/dashboard/settings'
     | '/dashboard/student'
     | '/dashboard/students'
     | '/dashboard/super-admin'
@@ -710,6 +722,7 @@ export interface RootRouteChildren {
   DashboardExamsRoute: typeof DashboardExamsRoute
   DashboardFeesRoute: typeof DashboardFeesRoute
   DashboardSecretaryRoute: typeof DashboardSecretaryRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardStudentRoute: typeof DashboardStudentRouteWithChildren
   DashboardStudentsRoute: typeof DashboardStudentsRoute
   DashboardSuperAdminRoute: typeof DashboardSuperAdminRouteWithChildren
@@ -767,6 +780,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/student'
       fullPath: '/dashboard/student'
       preLoaderRoute: typeof DashboardStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/dashboard/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/secretary': {
@@ -1226,6 +1246,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardExamsRoute: DashboardExamsRoute,
   DashboardFeesRoute: DashboardFeesRoute,
   DashboardSecretaryRoute: DashboardSecretaryRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardStudentRoute: DashboardStudentRouteWithChildren,
   DashboardStudentsRoute: DashboardStudentsRoute,
   DashboardSuperAdminRoute: DashboardSuperAdminRouteWithChildren,
@@ -1236,3 +1257,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
