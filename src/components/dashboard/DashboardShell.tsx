@@ -10,6 +10,7 @@ import {
   Wallet,
   Clock,
   Megaphone,
+  Bell,
   Settings,
   LogOut,
   type LucideIcon,
@@ -35,6 +36,7 @@ export const commonNav: NavItem[] = [
   { to: "/dashboard/fees", label: "Frais", icon: Wallet },
   { to: "/dashboard/timetable", label: "Emploi du temps", icon: Clock },
   { to: "/dashboard/announcements", label: "Annonces", icon: Megaphone },
+  { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { to: "/dashboard/settings", label: "Paramètres", icon: Settings },
 ];
 
