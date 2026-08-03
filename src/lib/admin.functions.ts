@@ -1021,3 +1021,62 @@ export const updateSchoolSettings = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ------------------------------------------------------------------ */
+/* notifications center                                               */
+/* ------------------------------------------------------------------ */
+
+export const listAdminNotifications = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { schoolId } = await requireSchoolAdmin(context as any);
+    const sb = (context as any).supabase;
+    const [notifs, anns] = await Promise.all([
+      sb
+        .from("notifications")
+        .select("id, type, title, message, severity, read, created_at")
+        .eq("school_id", schoolId)
+        .order("created_at", { ascending: false })
+        .limit(200),
+      sb
+        .from("announcements")
+        .select("id, title, body, audience, status, publish_at, created_at")
+        .eq("school_id", schoolId)
+        .order("created_at", { ascending: false })
+        .limit(30),
+    ]);
+    return {
+      notifications: notifs.data ?? [],
+      announcements: anns.data ?? [],
+      unread: (notifs.data ?? []).filter((n: any) => !n.read).length,
+    };
+  });
+
+export const setNotificationRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: uuid, read: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { schoolId } = await requireSchoolAdmin(context as any);
+    const sb = (context as any).supabase;
+    const { error } = await sb
+      .from("notifications")
+      .update({ read: data.read })
+      .eq("id", data.id)
+      .eq("school_id", schoolId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const markAllNotificationsRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { schoolId } = await requireSchoolAdmin(context as any);
+    const sb = (context as any).supabase;
+    const { error } = await sb
+      .from("notifications")
+      .update({ read: true })
+      .eq("school_id", schoolId)
+      .eq("read", false);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
