@@ -104,6 +104,11 @@ function LoginPage() {
                 </button>
               </div>
             </div>
+            <div className="flex justify-end -mt-1">
+              <Link to="/auth/forgot-password" className="text-sm text-primary font-medium hover:underline">
+                Mot de passe oublié ?
+              </Link>
+            </div>
             <Button type="submit" className="w-full shadow-[var(--shadow-elegant)]" disabled={loading}>
               {loading ? "..." : t("auth.login.submit")}
             </Button>
