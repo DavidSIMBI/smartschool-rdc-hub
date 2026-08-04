@@ -207,13 +207,21 @@ const assignmentSchema = z.object({
   status: z.enum(["open", "closed", "archived"]).default("open"),
 });
 
+const extendedAssignmentSchema = assignmentSchema.extend({
+  open_at: z.string().nullable().optional(),
+  allow_late: z.boolean().default(false),
+  max_score: z.number().default(20),
+  publish: z.boolean().default(false),
+});
+
 export const saveAssignment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => assignmentSchema.parse(d))
+  .inputValidator((d: unknown) => extendedAssignmentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
     const teacher = await getTeacherRow(supabase, context.userId);
     if (!teacher) throw new Error("Teacher not found");
+    await assertTeachesClass(supabase, context.userId, data.class_id);
     const payload = {
       teacher_id: teacher.id,
       school_id: teacher.school_id,
@@ -224,15 +232,41 @@ export const saveAssignment = createServerFn({ method: "POST" })
       due_date: data.due_date ?? null,
       attachments: data.attachments,
       status: data.status,
+      open_at: data.open_at ?? null,
+      allow_late: data.allow_late,
+      max_score: data.max_score,
+      ...(data.publish ? { published_at: new Date().toISOString() } : {}),
     };
     if (data.id) {
       const { error } = await supabase.from("assignments").update(payload).eq("id", data.id);
       if (error) throw error;
+      if (data.publish) {
+        await notifyClassStudents(supabase, data.class_id, "assignment", "Devoir publié", data.title);
+      }
       return { id: data.id };
     }
     const { data: row, error } = await supabase.from("assignments").insert(payload).select("id").maybeSingle();
     if (error) throw error;
+    if (data.publish) {
+      await notifyClassStudents(supabase, data.class_id, "assignment", "Nouveau devoir publié", data.title);
+    }
     return { id: row!.id };
+  });
+
+export const publishAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { data: row, error } = await supabase
+      .from("assignments")
+      .update({ published_at: new Date().toISOString(), status: "open" })
+      .eq("id", data.id)
+      .select("title, class_id")
+      .maybeSingle();
+    if (error) throw error;
+    if (row) await notifyClassStudents(supabase, row.class_id, "assignment", "Nouveau devoir publié", row.title);
+    return { ok: true };
   });
 
 export const deleteAssignment = createServerFn({ method: "POST" })
