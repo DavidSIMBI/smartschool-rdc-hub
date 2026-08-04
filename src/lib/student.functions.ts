@@ -439,6 +439,22 @@ export const listStudentBookmarks = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+export const listStudentResources = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) return [];
+    const { data } = await supabase
+      .from("teaching_resources")
+      .select("*, subjects(name), classes(name), teachers(first_name, last_name)")
+      .eq("status", "published")
+      .lte("publish_at", new Date().toISOString())
+      .order("publish_at", { ascending: false })
+      .limit(200);
+    return data ?? [];
+  });
+
 const searchSchema = z.object({ q: z.string().min(1).max(120) });
 
 export const searchStudent = createServerFn({ method: "POST" })
