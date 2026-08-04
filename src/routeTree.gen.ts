@@ -34,6 +34,7 @@ import { Route as DashboardTeacherIndexRouteImport } from './routes/dashboard.te
 import { Route as DashboardSuperAdminIndexRouteImport } from './routes/dashboard.super-admin.index'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
 import { Route as DashboardTeacherSubjectsRouteImport } from './routes/dashboard.teacher.subjects'
+import { Route as DashboardTeacherResourcesRouteImport } from './routes/dashboard.teacher.resources'
 import { Route as DashboardTeacherProfileRouteImport } from './routes/dashboard.teacher.profile'
 import { Route as DashboardTeacherNotificationsRouteImport } from './routes/dashboard.teacher.notifications'
 import { Route as DashboardTeacherMessagesRouteImport } from './routes/dashboard.teacher.messages'
@@ -193,6 +194,12 @@ const DashboardTeacherSubjectsRoute =
   DashboardTeacherSubjectsRouteImport.update({
     id: '/subjects',
     path: '/subjects',
+    getParentRoute: () => DashboardTeacherRoute,
+  } as any)
+const DashboardTeacherResourcesRoute =
+  DashboardTeacherResourcesRouteImport.update({
+    id: '/resources',
+    path: '/resources',
     getParentRoute: () => DashboardTeacherRoute,
   } as any)
 const DashboardTeacherProfileRoute = DashboardTeacherProfileRouteImport.update({
@@ -442,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
@@ -499,6 +507,7 @@ export interface FileRoutesByTo {
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminIndexRoute
@@ -560,6 +569,7 @@ export interface FileRoutesById {
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
@@ -622,6 +632,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student'
     | '/dashboard/super-admin'
@@ -739,6 +751,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
@@ -945,6 +958,13 @@ declare module '@tanstack/react-router' {
       path: '/subjects'
       fullPath: '/dashboard/teacher/subjects'
       preLoaderRoute: typeof DashboardTeacherSubjectsRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
+    '/dashboard/teacher/resources': {
+      id: '/dashboard/teacher/resources'
+      path: '/resources'
+      fullPath: '/dashboard/teacher/resources'
+      preLoaderRoute: typeof DashboardTeacherResourcesRouteImport
       parentRoute: typeof DashboardTeacherRoute
     }
     '/dashboard/teacher/profile': {
@@ -1272,6 +1292,7 @@ interface DashboardTeacherRouteChildren {
   DashboardTeacherMessagesRoute: typeof DashboardTeacherMessagesRoute
   DashboardTeacherNotificationsRoute: typeof DashboardTeacherNotificationsRoute
   DashboardTeacherProfileRoute: typeof DashboardTeacherProfileRoute
+  DashboardTeacherResourcesRoute: typeof DashboardTeacherResourcesRoute
   DashboardTeacherSubjectsRoute: typeof DashboardTeacherSubjectsRoute
   DashboardTeacherIndexRoute: typeof DashboardTeacherIndexRoute
 }
@@ -1287,6 +1308,7 @@ const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
   DashboardTeacherMessagesRoute: DashboardTeacherMessagesRoute,
   DashboardTeacherNotificationsRoute: DashboardTeacherNotificationsRoute,
   DashboardTeacherProfileRoute: DashboardTeacherProfileRoute,
+  DashboardTeacherResourcesRoute: DashboardTeacherResourcesRoute,
   DashboardTeacherSubjectsRoute: DashboardTeacherSubjectsRoute,
   DashboardTeacherIndexRoute: DashboardTeacherIndexRoute,
 }
