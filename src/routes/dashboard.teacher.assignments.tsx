@@ -29,7 +29,7 @@ function AssignmentsPage() {
   }, [classes]);
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ class_id: "", subject_id: "", title: "", instructions: "", due_date: "" });
+  const [form, setForm] = useState({ class_id: "", subject_id: "", title: "", instructions: "", due_date: "", open_at: "", allow_late: false, max_score: 20 });
 
   const save = useMutation({
     mutationFn: () => saveFn({ data: {
@@ -38,14 +38,18 @@ function AssignmentsPage() {
       title: form.title,
       instructions: form.instructions,
       due_date: form.due_date || null,
+      open_at: form.open_at || null,
+      allow_late: form.allow_late,
+      max_score: Number(form.max_score) || 20,
+      publish: true,
       attachments: [],
       status: "open",
     } }),
     onSuccess: () => {
-      toast.success("Devoir créé");
+      toast.success("Devoir créé et publié");
       qc.invalidateQueries({ queryKey: ["teacher"] });
       setOpen(false);
-      setForm({ class_id: "", subject_id: "", title: "", instructions: "", due_date: "" });
+      setForm({ class_id: "", subject_id: "", title: "", instructions: "", due_date: "", open_at: "", allow_late: false, max_score: 20 });
     },
     onError: (e: any) => toast.error(e?.message ?? "Erreur"),
   });
@@ -76,7 +80,19 @@ function AssignmentsPage() {
             </select>
             <input className="sm:col-span-2 rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Titre du devoir" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             <textarea className="sm:col-span-2 rounded-md border border-input bg-background px-3 py-2 text-sm min-h-[80px]" placeholder="Consignes" value={form.instructions} onChange={(e) => setForm((f) => ({ ...f, instructions: e.target.value }))} />
-            <input type="datetime-local" className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} />
+            <label className="text-xs text-muted-foreground">Date d'ouverture
+              <input type="datetime-local" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.open_at} onChange={(e) => setForm((f) => ({ ...f, open_at: e.target.value }))} />
+            </label>
+            <label className="text-xs text-muted-foreground">Date limite
+              <input type="datetime-local" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.due_date} onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))} />
+            </label>
+            <label className="text-xs text-muted-foreground">Note maximale
+              <input type="number" className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.max_score} onChange={(e) => setForm((f) => ({ ...f, max_score: Number(e.target.value) }))} />
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={form.allow_late} onChange={(e) => setForm((f) => ({ ...f, allow_late: e.target.checked }))} />
+              Autoriser les remises tardives
+            </label>
           </div>
           <div className="mt-4 flex gap-2 justify-end">
             <Button variant="ghost" onClick={() => setOpen(false)}>Annuler</Button>
