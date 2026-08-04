@@ -152,7 +152,11 @@ export const listStudentAssignments = createServerFn({ method: "GET" })
       supabase.from("assignment_submissions").select("*").eq("student_id", student.id),
     ]);
     const bySub: Record<string, any> = {};
-    for (const s of (subs ?? []) as any[]) bySub[s.assignment_id] = s;
+    for (const s of (subs ?? []) as any[]) {
+      bySub[s.assignment_id] = s.grade_published
+        ? s
+        : { ...s, grade: null, feedback: null };
+    }
     return (assignments ?? []).map((a: any) => ({ ...a, submission: bySub[a.id] ?? null }));
   });
 
@@ -169,6 +173,23 @@ export const submitAssignment = createServerFn({ method: "POST" })
     const supabase = context.supabase as any;
     const student = await getStudentRow(supabase, context.userId);
     if (!student) throw new Error("Student profile not found");
+
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, title, class_id, due_date, allow_late, status, open_at, teacher_id")
+      .eq("id", data.assignment_id)
+      .maybeSingle();
+    if (!assignment) throw new Error("Devoir introuvable");
+    if (assignment.class_id !== student.class_id) throw new Error("Ce devoir n'est pas destiné à votre classe");
+    if (assignment.open_at && new Date(assignment.open_at) > new Date()) {
+      throw new Error("Ce devoir n'est pas encore ouvert");
+    }
+    const past = Boolean(assignment.due_date) && new Date(assignment.due_date) < new Date();
+    if (past && !assignment.allow_late) {
+      throw new Error("La date limite est dépassée : les remises tardives ne sont pas autorisées");
+    }
+    if (assignment.status !== "open") throw new Error("Ce devoir est clôturé");
+
     const { error } = await supabase.from("assignment_submissions").upsert(
       {
         assignment_id: data.assignment_id,
@@ -176,11 +197,28 @@ export const submitAssignment = createServerFn({ method: "POST" })
         content: data.content ?? null,
         file_url: data.file_url ?? null,
         submitted_at: new Date().toISOString(),
+        is_late: past,
+        grade: null,
+        feedback: null,
+        graded_at: null,
+        graded_by: null,
+        grade_published: false,
+        returned_at: null,
       },
       { onConflict: "assignment_id,student_id" as any },
     );
     if (error) throw error;
-    return { ok: true };
+
+    const { data: teacher } = await supabase.from("teachers").select("user_id").eq("id", assignment.teacher_id).maybeSingle();
+    if (teacher?.user_id) {
+      await supabase.rpc("notify_school_user", {
+        _user_id: teacher.user_id,
+        _type: "submission",
+        _title: "Nouvelle remise de devoir",
+        _body: `${student.first_name} ${student.last_name} — ${assignment.title}`,
+      });
+    }
+    return { ok: true, is_late: past, submitted_at: new Date().toISOString() };
   });
 
 export const listStudentExams = createServerFn({ method: "GET" })
