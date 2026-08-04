@@ -57,6 +57,7 @@ import { Route as DashboardStudentTimetableRouteImport } from './routes/dashboar
 import { Route as DashboardStudentSubjectsRouteImport } from './routes/dashboard.student.subjects'
 import { Route as DashboardStudentSettingsRouteImport } from './routes/dashboard.student.settings'
 import { Route as DashboardStudentSearchRouteImport } from './routes/dashboard.student.search'
+import { Route as DashboardStudentResourcesRouteImport } from './routes/dashboard.student.resources'
 import { Route as DashboardStudentReportCardRouteImport } from './routes/dashboard.student.report-card'
 import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
 import { Route as DashboardStudentNotificationsRouteImport } from './routes/dashboard.student.notifications'
@@ -330,6 +331,12 @@ const DashboardStudentSearchRoute = DashboardStudentSearchRouteImport.update({
   path: '/search',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentResourcesRoute =
+  DashboardStudentResourcesRouteImport.update({
+    id: '/resources',
+    path: '/resources',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardStudentReportCardRoute =
   DashboardStudentReportCardRouteImport.update({
     id: '/report-card',
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -493,6 +501,7 @@ export interface FileRoutesByTo {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -556,6 +565,7 @@ export interface FileRoutesById {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -620,6 +630,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -679,6 +690,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -741,6 +753,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -1133,6 +1146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentSearchRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/resources': {
+      id: '/dashboard/student/resources'
+      path: '/resources'
+      fullPath: '/dashboard/student/resources'
+      preLoaderRoute: typeof DashboardStudentResourcesRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/report-card': {
       id: '/dashboard/student/report-card'
       path: '/report-card'
@@ -1232,6 +1252,7 @@ interface DashboardStudentRouteChildren {
   DashboardStudentNotificationsRoute: typeof DashboardStudentNotificationsRoute
   DashboardStudentProfileRoute: typeof DashboardStudentProfileRoute
   DashboardStudentReportCardRoute: typeof DashboardStudentReportCardRoute
+  DashboardStudentResourcesRoute: typeof DashboardStudentResourcesRoute
   DashboardStudentSearchRoute: typeof DashboardStudentSearchRoute
   DashboardStudentSettingsRoute: typeof DashboardStudentSettingsRoute
   DashboardStudentSubjectsRoute: typeof DashboardStudentSubjectsRoute
@@ -1251,6 +1272,7 @@ const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentNotificationsRoute: DashboardStudentNotificationsRoute,
   DashboardStudentProfileRoute: DashboardStudentProfileRoute,
   DashboardStudentReportCardRoute: DashboardStudentReportCardRoute,
+  DashboardStudentResourcesRoute: DashboardStudentResourcesRoute,
   DashboardStudentSearchRoute: DashboardStudentSearchRoute,
   DashboardStudentSettingsRoute: DashboardStudentSettingsRoute,
   DashboardStudentSubjectsRoute: DashboardStudentSubjectsRoute,
