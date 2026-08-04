@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Upload, CheckCircle2, Clock, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { SUBMISSION_EXTENSIONS, validateFile } from "@/lib/lms";
 
 export const Route = createFileRoute("/dashboard/student/assignments")({ component: AssignmentsPage });
 
@@ -38,6 +39,8 @@ function AssignmentsPage() {
     try {
       let file_url: string | null = null;
       if (file) {
+        const err = validateFile(file, SUBMISSION_EXTENSIONS);
+        if (err) { toast.error(err); return; }
         const path = `submissions/${assignmentId}/${Date.now()}-${file.name}`;
         const { error } = await supabase.storage.from("teacher-materials").upload(path, file, { upsert: true });
         if (error) throw error;
@@ -94,6 +97,7 @@ function AssignmentsPage() {
                     )}
                     {sub && (
                       <div className="mt-3 rounded-lg bg-secondary/50 p-3 text-sm">
+                        <div className="text-xs text-muted-foreground">Remis le {new Date(sub.submitted_at).toLocaleString("fr-FR")}{sub.is_late ? " · en retard" : ""}</div>
                         {sub.content && <div className="whitespace-pre-wrap">{sub.content}</div>}
                         {sub.file_url && <a className="text-primary underline text-xs" href={sub.file_url} target="_blank" rel="noreferrer">Voir le fichier</a>}
                         {sub.grade !== null && <div className="mt-1 text-xs">Note: <strong>{sub.grade}</strong></div>}
