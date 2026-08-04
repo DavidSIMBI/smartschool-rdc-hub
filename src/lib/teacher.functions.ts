@@ -13,6 +13,32 @@ async function getTeacherRow(supabase: any, userId: string) {
   return data as { id: string; first_name: string; last_name: string; email: string | null; phone: string | null; specialty: string | null; school_id: string } | null;
 }
 
+async function assertTeachesClass(supabase: any, userId: string, classId?: string | null) {
+  if (!classId) return;
+  const { data } = await supabase
+    .from("teacher_class_subjects")
+    .select("id, teachers!inner(user_id)")
+    .eq("class_id", classId)
+    .eq("teachers.user_id", userId)
+    .limit(1);
+  if (!data || data.length === 0) {
+    throw new Error("Vous n'enseignez pas dans cette classe");
+  }
+}
+
+async function notifyUsers(supabase: any, userIds: (string | null | undefined)[], type: string, title: string, body: string) {
+  const ids = Array.from(new Set(userIds.filter(Boolean))) as string[];
+  for (const id of ids) {
+    await supabase.rpc("notify_school_user", { _user_id: id, _type: type, _title: title, _body: body });
+  }
+}
+
+async function notifyClassStudents(supabase: any, classId: string | null | undefined, type: string, title: string, body: string) {
+  if (!classId) return;
+  const { data } = await supabase.from("students").select("user_id").eq("class_id", classId).not("user_id", "is", null);
+  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body);
+}
+
 export const getTeacherOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
