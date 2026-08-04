@@ -115,7 +115,12 @@ export type Database = {
           feedback: string | null
           file_url: string | null
           grade: number | null
+          grade_published: boolean
+          graded_at: string | null
+          graded_by: string | null
           id: string
+          is_late: boolean
+          returned_at: string | null
           student_id: string
           submitted_at: string
         }
@@ -125,7 +130,12 @@ export type Database = {
           feedback?: string | null
           file_url?: string | null
           grade?: number | null
+          grade_published?: boolean
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
+          is_late?: boolean
+          returned_at?: string | null
           student_id: string
           submitted_at?: string
         }
@@ -135,7 +145,12 @@ export type Database = {
           feedback?: string | null
           file_url?: string | null
           grade?: number | null
+          grade_published?: boolean
+          graded_at?: string | null
+          graded_by?: string | null
           id?: string
+          is_late?: boolean
+          returned_at?: string | null
           student_id?: string
           submitted_at?: string
         }
@@ -158,12 +173,16 @@ export type Database = {
       }
       assignments: {
         Row: {
+          allow_late: boolean
           attachments: Json
           class_id: string
           created_at: string
           due_date: string | null
           id: string
           instructions: string | null
+          max_score: number
+          open_at: string | null
+          published_at: string | null
           school_id: string
           status: Database["public"]["Enums"]["assignment_status"]
           subject_id: string | null
@@ -172,12 +191,16 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allow_late?: boolean
           attachments?: Json
           class_id: string
           created_at?: string
           due_date?: string | null
           id?: string
           instructions?: string | null
+          max_score?: number
+          open_at?: string | null
+          published_at?: string | null
           school_id: string
           status?: Database["public"]["Enums"]["assignment_status"]
           subject_id?: string | null
@@ -186,12 +209,16 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allow_late?: boolean
           attachments?: Json
           class_id?: string
           created_at?: string
           due_date?: string | null
           id?: string
           instructions?: string | null
+          max_score?: number
+          open_at?: string | null
+          published_at?: string | null
           school_id?: string
           status?: Database["public"]["Enums"]["assignment_status"]
           subject_id?: string | null
@@ -490,6 +517,63 @@ export type Database = {
           },
         ]
       }
+      exam_questions: {
+        Row: {
+          correct_answer: string | null
+          created_at: string
+          exam_id: string
+          id: string
+          kind: string
+          options: Json
+          order_index: number
+          points: number
+          prompt: string
+          school_id: string
+          updated_at: string
+        }
+        Insert: {
+          correct_answer?: string | null
+          created_at?: string
+          exam_id: string
+          id?: string
+          kind?: string
+          options?: Json
+          order_index?: number
+          points?: number
+          prompt: string
+          school_id: string
+          updated_at?: string
+        }
+        Update: {
+          correct_answer?: string | null
+          created_at?: string
+          exam_id?: string
+          id?: string
+          kind?: string
+          options?: Json
+          order_index?: number
+          points?: number
+          prompt?: string
+          school_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_questions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_results: {
         Row: {
           comment: string | null
@@ -537,11 +621,17 @@ export type Database = {
       }
       exams: {
         Row: {
+          available_from: string | null
+          available_to: string | null
           class_id: string
           created_at: string
+          document_url: string | null
+          duration_minutes: number | null
           exam_date: string | null
+          exam_kind: string
           id: string
           max_score: number
+          randomize: boolean
           school_id: string
           status: Database["public"]["Enums"]["exam_status"]
           subject_id: string | null
@@ -551,11 +641,17 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          available_from?: string | null
+          available_to?: string | null
           class_id: string
           created_at?: string
+          document_url?: string | null
+          duration_minutes?: number | null
           exam_date?: string | null
+          exam_kind?: string
           id?: string
           max_score?: number
+          randomize?: boolean
           school_id: string
           status?: Database["public"]["Enums"]["exam_status"]
           subject_id?: string | null
@@ -565,11 +661,17 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          available_from?: string | null
+          available_to?: string | null
           class_id?: string
           created_at?: string
+          document_url?: string | null
+          duration_minutes?: number | null
           exam_date?: string | null
+          exam_kind?: string
           id?: string
           max_score?: number
+          randomize?: boolean
           school_id?: string
           status?: Database["public"]["Enums"]["exam_status"]
           subject_id?: string | null
@@ -988,6 +1090,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "profiles_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resource_upload_history: {
+        Row: {
+          action: string
+          actor_id: string | null
+          actor_name: string | null
+          created_at: string
+          details: Json
+          id: string
+          resource_id: string | null
+          school_id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          resource_id?: string | null
+          school_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          actor_name?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          resource_id?: string | null
+          school_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_upload_history_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
@@ -1502,6 +1645,107 @@ export type Database = {
           },
         ]
       }
+      teaching_resources: {
+        Row: {
+          academic_year: string | null
+          class_id: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          external_url: string | null
+          file_name: string | null
+          id: string
+          mime_type: string | null
+          publish_at: string
+          resource_type: string
+          school_id: string
+          size_bytes: number | null
+          status: string
+          storage_path: string | null
+          subject_id: string | null
+          teacher_id: string
+          term: string | null
+          title: string
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          external_url?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          publish_at?: string
+          resource_type?: string
+          school_id: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          subject_id?: string | null
+          teacher_id: string
+          term?: string | null
+          title: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string | null
+          class_id?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          external_url?: string | null
+          file_name?: string | null
+          id?: string
+          mime_type?: string | null
+          publish_at?: string
+          resource_type?: string
+          school_id?: string
+          size_bytes?: number | null
+          status?: string
+          storage_path?: string | null
+          subject_id?: string | null
+          teacher_id?: string
+          term?: string | null
+          title?: string
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teaching_resources_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaching_resources_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaching_resources_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teaching_resources_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       timetable_slots: {
         Row: {
           class_id: string
@@ -1587,6 +1831,10 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      notify_school_user: {
+        Args: { _body: string; _title: string; _type: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
