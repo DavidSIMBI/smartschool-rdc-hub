@@ -330,13 +330,23 @@ const examSchema = z.object({
   term: z.string().nullable().optional(),
 });
 
+const extendedExamSchema = examSchema.extend({
+  duration_minutes: z.number().nullable().optional(),
+  available_from: z.string().nullable().optional(),
+  available_to: z.string().nullable().optional(),
+  randomize: z.boolean().default(false),
+  document_url: z.string().nullable().optional(),
+  exam_kind: z.enum(["document", "quiz"]).default("document"),
+});
+
 export const saveExam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => examSchema.parse(d))
+  .inputValidator((d: unknown) => extendedExamSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
     const teacher = await getTeacherRow(supabase, context.userId);
     if (!teacher) throw new Error("Teacher not found");
+    await assertTeachesClass(supabase, context.userId, data.class_id);
     const payload = {
       teacher_id: teacher.id,
       school_id: teacher.school_id,
@@ -346,6 +356,12 @@ export const saveExam = createServerFn({ method: "POST" })
       exam_date: data.exam_date ?? null,
       max_score: data.max_score,
       term: data.term ?? null,
+      duration_minutes: data.duration_minutes ?? null,
+      available_from: data.available_from ?? null,
+      available_to: data.available_to ?? null,
+      randomize: data.randomize,
+      document_url: data.document_url ?? null,
+      exam_kind: data.exam_kind,
     };
     if (data.id) {
       const { error } = await supabase.from("exams").update(payload).eq("id", data.id);
