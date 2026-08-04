@@ -436,7 +436,33 @@ export const publishExam = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
-    const { error } = await supabase.from("exams").update({ status: "published" }).eq("id", data.id);
+    const { data: row, error } = await supabase
+      .from("exams")
+      .update({ status: "published" })
+      .eq("id", data.id)
+      .select("title, class_id")
+      .maybeSingle();
+    if (error) throw error;
+    if (row) await notifyClassStudents(supabase, row.class_id, "exam", "Examen publié", row.title);
+    return { ok: true };
+  });
+
+export const unpublishExam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase.from("exams").update({ status: "draft" }).eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteExam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase.from("exams").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
