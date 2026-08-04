@@ -13,6 +13,32 @@ async function getTeacherRow(supabase: any, userId: string) {
   return data as { id: string; first_name: string; last_name: string; email: string | null; phone: string | null; specialty: string | null; school_id: string } | null;
 }
 
+async function assertTeachesClass(supabase: any, userId: string, classId?: string | null) {
+  if (!classId) return;
+  const { data } = await supabase
+    .from("teacher_class_subjects")
+    .select("id, teachers!inner(user_id)")
+    .eq("class_id", classId)
+    .eq("teachers.user_id", userId)
+    .limit(1);
+  if (!data || data.length === 0) {
+    throw new Error("Vous n'enseignez pas dans cette classe");
+  }
+}
+
+async function notifyUsers(supabase: any, userIds: (string | null | undefined)[], type: string, title: string, body: string) {
+  const ids = Array.from(new Set(userIds.filter(Boolean))) as string[];
+  for (const id of ids) {
+    await supabase.rpc("notify_school_user", { _user_id: id, _type: type, _title: title, _body: body });
+  }
+}
+
+async function notifyClassStudents(supabase: any, classId: string | null | undefined, type: string, title: string, body: string) {
+  if (!classId) return;
+  const { data } = await supabase.from("students").select("user_id").eq("class_id", classId).not("user_id", "is", null);
+  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body);
+}
+
 export const getTeacherOverview = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -207,13 +233,21 @@ const assignmentSchema = z.object({
   status: z.enum(["open", "closed", "archived"]).default("open"),
 });
 
+const extendedAssignmentSchema = assignmentSchema.extend({
+  open_at: z.string().nullable().optional(),
+  allow_late: z.boolean().default(false),
+  max_score: z.number().default(20),
+  publish: z.boolean().default(false),
+});
+
 export const saveAssignment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => assignmentSchema.parse(d))
+  .inputValidator((d: unknown) => extendedAssignmentSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
     const teacher = await getTeacherRow(supabase, context.userId);
     if (!teacher) throw new Error("Teacher not found");
+    await assertTeachesClass(supabase, context.userId, data.class_id);
     const payload = {
       teacher_id: teacher.id,
       school_id: teacher.school_id,
@@ -224,15 +258,41 @@ export const saveAssignment = createServerFn({ method: "POST" })
       due_date: data.due_date ?? null,
       attachments: data.attachments,
       status: data.status,
+      open_at: data.open_at ?? null,
+      allow_late: data.allow_late,
+      max_score: data.max_score,
+      ...(data.publish ? { published_at: new Date().toISOString() } : {}),
     };
     if (data.id) {
       const { error } = await supabase.from("assignments").update(payload).eq("id", data.id);
       if (error) throw error;
+      if (data.publish) {
+        await notifyClassStudents(supabase, data.class_id, "assignment", "Devoir publié", data.title);
+      }
       return { id: data.id };
     }
     const { data: row, error } = await supabase.from("assignments").insert(payload).select("id").maybeSingle();
     if (error) throw error;
+    if (data.publish) {
+      await notifyClassStudents(supabase, data.class_id, "assignment", "Nouveau devoir publié", data.title);
+    }
     return { id: row!.id };
+  });
+
+export const publishAssignment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { data: row, error } = await supabase
+      .from("assignments")
+      .update({ published_at: new Date().toISOString(), status: "open" })
+      .eq("id", data.id)
+      .select("title, class_id")
+      .maybeSingle();
+    if (error) throw error;
+    if (row) await notifyClassStudents(supabase, row.class_id, "assignment", "Nouveau devoir publié", row.title);
+    return { ok: true };
   });
 
 export const deleteAssignment = createServerFn({ method: "POST" })
@@ -270,13 +330,23 @@ const examSchema = z.object({
   term: z.string().nullable().optional(),
 });
 
+const extendedExamSchema = examSchema.extend({
+  duration_minutes: z.number().nullable().optional(),
+  available_from: z.string().nullable().optional(),
+  available_to: z.string().nullable().optional(),
+  randomize: z.boolean().default(false),
+  document_url: z.string().nullable().optional(),
+  exam_kind: z.enum(["document", "quiz"]).default("document"),
+});
+
 export const saveExam = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => examSchema.parse(d))
+  .inputValidator((d: unknown) => extendedExamSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
     const teacher = await getTeacherRow(supabase, context.userId);
     if (!teacher) throw new Error("Teacher not found");
+    await assertTeachesClass(supabase, context.userId, data.class_id);
     const payload = {
       teacher_id: teacher.id,
       school_id: teacher.school_id,
@@ -286,6 +356,12 @@ export const saveExam = createServerFn({ method: "POST" })
       exam_date: data.exam_date ?? null,
       max_score: data.max_score,
       term: data.term ?? null,
+      duration_minutes: data.duration_minutes ?? null,
+      available_from: data.available_from ?? null,
+      available_to: data.available_to ?? null,
+      randomize: data.randomize,
+      document_url: data.document_url ?? null,
+      exam_kind: data.exam_kind,
     };
     if (data.id) {
       const { error } = await supabase.from("exams").update(payload).eq("id", data.id);
@@ -360,7 +436,33 @@ export const publishExam = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
-    const { error } = await supabase.from("exams").update({ status: "published" }).eq("id", data.id);
+    const { data: row, error } = await supabase
+      .from("exams")
+      .update({ status: "published" })
+      .eq("id", data.id)
+      .select("title, class_id")
+      .maybeSingle();
+    if (error) throw error;
+    if (row) await notifyClassStudents(supabase, row.class_id, "exam", "Examen publié", row.title);
+    return { ok: true };
+  });
+
+export const unpublishExam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase.from("exams").update({ status: "draft" }).eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const deleteExam = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase.from("exams").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
   });
@@ -610,4 +712,272 @@ export const deleteDocument = createServerFn({ method: "POST" })
     const { error } = await supabase.from("teacher_documents").delete().eq("id", data.id);
     if (error) throw error;
     return { ok: true };
+  });
+
+// --- Exam questions (online quizzes) ---
+const questionSchema = z.object({
+  id: z.string().uuid().optional(),
+  exam_id: z.string().uuid(),
+  kind: z.enum(["mcq", "truefalse", "short"]),
+  prompt: z.string().min(1),
+  options: z.array(z.string()).default([]),
+  correct_answer: z.string().nullable().optional(),
+  points: z.number().default(1),
+  order_index: z.number().default(0),
+});
+
+export const listExamQuestions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { data: rows } = await supabase
+      .from("exam_questions")
+      .select("*")
+      .eq("exam_id", data.id)
+      .order("order_index");
+    return rows ?? [];
+  });
+
+export const saveExamQuestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => questionSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) throw new Error("Teacher not found");
+    const payload = {
+      exam_id: data.exam_id,
+      school_id: teacher.school_id,
+      kind: data.kind,
+      prompt: data.prompt,
+      options: data.options,
+      correct_answer: data.correct_answer ?? null,
+      points: data.points,
+      order_index: data.order_index,
+    };
+    if (data.id) {
+      const { error } = await supabase.from("exam_questions").update(payload).eq("id", data.id);
+      if (error) throw error;
+      return { id: data.id };
+    }
+    const { data: row, error } = await supabase.from("exam_questions").insert(payload).select("id").maybeSingle();
+    if (error) throw error;
+    return { id: row!.id };
+  });
+
+export const deleteExamQuestion = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { error } = await supabase.from("exam_questions").delete().eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+// --- Teaching resources ---
+const resourceSchema = z.object({
+  id: z.string().uuid().optional(),
+  class_id: z.string().uuid().nullable().optional(),
+  subject_id: z.string().uuid().nullable().optional(),
+  academic_year: z.string().nullable().optional(),
+  term: z.string().nullable().optional(),
+  topic: z.string().nullable().optional(),
+  title: z.string().min(1),
+  description: z.string().nullable().optional(),
+  resource_type: z.enum(["note", "presentation", "video", "video_link", "image", "reference"]),
+  storage_path: z.string().nullable().optional(),
+  external_url: z.string().nullable().optional(),
+  file_name: z.string().nullable().optional(),
+  mime_type: z.string().nullable().optional(),
+  size_bytes: z.number().nullable().optional(),
+  publish_at: z.string().nullable().optional(),
+  due_date: z.string().nullable().optional(),
+  status: z.enum(["draft", "scheduled", "published"]).default("published"),
+});
+
+export const listResources = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) return [];
+    const { data } = await supabase
+      .from("teaching_resources")
+      .select("*, classes(name), subjects(name)")
+      .eq("teacher_id", teacher.id)
+      .order("created_at", { ascending: false });
+    return data ?? [];
+  });
+
+export const saveResource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => resourceSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) throw new Error("Teacher not found");
+    if (data.size_bytes && data.size_bytes > 50 * 1024 * 1024) throw new Error("Fichier trop volumineux (max 50 Mo)");
+    await assertTeachesClass(supabase, context.userId, data.class_id);
+
+    const publishAt = data.publish_at ?? new Date().toISOString();
+    const status = data.status === "published" && new Date(publishAt) > new Date() ? "scheduled" : data.status;
+
+    const payload = {
+      school_id: teacher.school_id,
+      teacher_id: teacher.id,
+      class_id: data.class_id ?? null,
+      subject_id: data.subject_id ?? null,
+      academic_year: data.academic_year ?? null,
+      term: data.term ?? null,
+      topic: data.topic ?? null,
+      title: data.title,
+      description: data.description ?? null,
+      resource_type: data.resource_type,
+      storage_path: data.storage_path ?? null,
+      external_url: data.external_url ?? null,
+      file_name: data.file_name ?? null,
+      mime_type: data.mime_type ?? null,
+      size_bytes: data.size_bytes ?? null,
+      publish_at: publishAt,
+      due_date: data.due_date ?? null,
+      status,
+    };
+
+    let resourceId = data.id;
+    if (resourceId) {
+      const { error } = await supabase.from("teaching_resources").update(payload).eq("id", resourceId);
+      if (error) throw error;
+    } else {
+      const { data: row, error } = await supabase.from("teaching_resources").insert(payload).select("id").maybeSingle();
+      if (error) throw error;
+      resourceId = row!.id;
+    }
+
+    await supabase.from("resource_upload_history").insert({
+      school_id: teacher.school_id,
+      resource_id: resourceId,
+      actor_id: context.userId,
+      actor_name: `${teacher.first_name} ${teacher.last_name}`,
+      action: data.id ? "update" : "upload",
+      details: { title: data.title, file_name: data.file_name, size_bytes: data.size_bytes, status },
+    });
+
+    if (status === "published") {
+      await notifyClassStudents(supabase, data.class_id, "resource", "Nouvelle ressource pédagogique", data.title);
+    }
+    return { id: resourceId };
+  });
+
+export const deleteResource = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    const { data: row } = await supabase.from("teaching_resources").select("title, storage_path").eq("id", data.id).maybeSingle();
+    const { error } = await supabase.from("teaching_resources").delete().eq("id", data.id);
+    if (error) throw error;
+    if (teacher) {
+      await supabase.from("resource_upload_history").insert({
+        school_id: teacher.school_id,
+        resource_id: data.id,
+        actor_id: context.userId,
+        actor_name: `${teacher.first_name} ${teacher.last_name}`,
+        action: "delete",
+        details: { title: row?.title ?? null },
+      });
+    }
+    return { ok: true, storage_path: row?.storage_path ?? null };
+  });
+
+export const listResourceHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const { data } = await supabase
+      .from("resource_upload_history")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(60);
+    return data ?? [];
+  });
+
+// --- Grading (assignment submissions) ---
+export const listSubmissions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("*, classes(name), subjects(name)")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (!assignment) return { assignment: null, students: [], submissions: [] };
+    const [{ data: students }, { data: submissions }] = await Promise.all([
+      supabase.from("students").select("id, first_name, last_name, matricule, user_id").eq("class_id", assignment.class_id).order("last_name"),
+      supabase.from("assignment_submissions").select("*").eq("assignment_id", data.id),
+    ]);
+    return { assignment, students: students ?? [], submissions: submissions ?? [] };
+  });
+
+const gradeSchema = z.object({
+  submission_id: z.string().uuid(),
+  grade: z.number().nullable(),
+  feedback: z.string().nullable().optional(),
+  publish: z.boolean().default(false),
+});
+
+export const gradeSubmission = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => gradeSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const now = new Date().toISOString();
+    const { data: row, error } = await supabase
+      .from("assignment_submissions")
+      .update({
+        grade: data.grade,
+        feedback: data.feedback ?? null,
+        graded_at: now,
+        graded_by: context.userId,
+        grade_published: data.publish,
+        returned_at: data.publish ? now : null,
+      })
+      .eq("id", data.submission_id)
+      .select("student_id, assignment_id")
+      .maybeSingle();
+    if (error) throw error;
+    if (row && data.publish) {
+      const [{ data: student }, { data: assignment }] = await Promise.all([
+        supabase.from("students").select("user_id").eq("id", row.student_id).maybeSingle(),
+        supabase.from("assignments").select("title").eq("id", row.assignment_id).maybeSingle(),
+      ]);
+      await notifyUsers(supabase, [student?.user_id], "grade", "Devoir corrigé", assignment?.title ?? "Votre devoir a été corrigé");
+    }
+    return { ok: true };
+  });
+
+export const publishAssignmentGrades = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => idSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const now = new Date().toISOString();
+    const { data: rows, error } = await supabase
+      .from("assignment_submissions")
+      .update({ grade_published: true, returned_at: now })
+      .eq("assignment_id", data.id)
+      .not("grade", "is", null)
+      .select("student_id");
+    if (error) throw error;
+    const { data: assignment } = await supabase.from("assignments").select("title").eq("id", data.id).maybeSingle();
+    const ids = (rows ?? []).map((r: any) => r.student_id);
+    if (ids.length) {
+      const { data: students } = await supabase.from("students").select("user_id").in("id", ids);
+      await notifyUsers(supabase, (students ?? []).map((s: any) => s.user_id), "grade", "Notes publiées", assignment?.title ?? "Devoir");
+    }
+    return { count: (rows ?? []).length };
   });

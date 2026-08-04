@@ -34,10 +34,12 @@ import { Route as DashboardTeacherIndexRouteImport } from './routes/dashboard.te
 import { Route as DashboardSuperAdminIndexRouteImport } from './routes/dashboard.super-admin.index'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
 import { Route as DashboardTeacherSubjectsRouteImport } from './routes/dashboard.teacher.subjects'
+import { Route as DashboardTeacherResourcesRouteImport } from './routes/dashboard.teacher.resources'
 import { Route as DashboardTeacherProfileRouteImport } from './routes/dashboard.teacher.profile'
 import { Route as DashboardTeacherNotificationsRouteImport } from './routes/dashboard.teacher.notifications'
 import { Route as DashboardTeacherMessagesRouteImport } from './routes/dashboard.teacher.messages'
 import { Route as DashboardTeacherLessonPlansRouteImport } from './routes/dashboard.teacher.lesson-plans'
+import { Route as DashboardTeacherGradingRouteImport } from './routes/dashboard.teacher.grading'
 import { Route as DashboardTeacherExamsRouteImport } from './routes/dashboard.teacher.exams'
 import { Route as DashboardTeacherDocumentsRouteImport } from './routes/dashboard.teacher.documents'
 import { Route as DashboardTeacherClassesRouteImport } from './routes/dashboard.teacher.classes'
@@ -55,6 +57,7 @@ import { Route as DashboardStudentTimetableRouteImport } from './routes/dashboar
 import { Route as DashboardStudentSubjectsRouteImport } from './routes/dashboard.student.subjects'
 import { Route as DashboardStudentSettingsRouteImport } from './routes/dashboard.student.settings'
 import { Route as DashboardStudentSearchRouteImport } from './routes/dashboard.student.search'
+import { Route as DashboardStudentResourcesRouteImport } from './routes/dashboard.student.resources'
 import { Route as DashboardStudentReportCardRouteImport } from './routes/dashboard.student.report-card'
 import { Route as DashboardStudentProfileRouteImport } from './routes/dashboard.student.profile'
 import { Route as DashboardStudentNotificationsRouteImport } from './routes/dashboard.student.notifications'
@@ -195,6 +198,12 @@ const DashboardTeacherSubjectsRoute =
     path: '/subjects',
     getParentRoute: () => DashboardTeacherRoute,
   } as any)
+const DashboardTeacherResourcesRoute =
+  DashboardTeacherResourcesRouteImport.update({
+    id: '/resources',
+    path: '/resources',
+    getParentRoute: () => DashboardTeacherRoute,
+  } as any)
 const DashboardTeacherProfileRoute = DashboardTeacherProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -218,6 +227,11 @@ const DashboardTeacherLessonPlansRoute =
     path: '/lesson-plans',
     getParentRoute: () => DashboardTeacherRoute,
   } as any)
+const DashboardTeacherGradingRoute = DashboardTeacherGradingRouteImport.update({
+  id: '/grading',
+  path: '/grading',
+  getParentRoute: () => DashboardTeacherRoute,
+} as any)
 const DashboardTeacherExamsRoute = DashboardTeacherExamsRouteImport.update({
   id: '/exams',
   path: '/exams',
@@ -317,6 +331,12 @@ const DashboardStudentSearchRoute = DashboardStudentSearchRouteImport.update({
   path: '/search',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardStudentResourcesRoute =
+  DashboardStudentResourcesRouteImport.update({
+    id: '/resources',
+    path: '/resources',
+    getParentRoute: () => DashboardStudentRoute,
+  } as any)
 const DashboardStudentReportCardRoute =
   DashboardStudentReportCardRouteImport.update({
     id: '/report-card',
@@ -421,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -438,10 +459,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
+  '/dashboard/teacher/grading': typeof DashboardTeacherGradingRoute
   '/dashboard/teacher/lesson-plans': typeof DashboardTeacherLessonPlansRoute
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
@@ -478,6 +501,7 @@ export interface FileRoutesByTo {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -495,10 +519,12 @@ export interface FileRoutesByTo {
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
+  '/dashboard/teacher/grading': typeof DashboardTeacherGradingRoute
   '/dashboard/teacher/lesson-plans': typeof DashboardTeacherLessonPlansRoute
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminIndexRoute
@@ -539,6 +565,7 @@ export interface FileRoutesById {
   '/dashboard/student/notifications': typeof DashboardStudentNotificationsRoute
   '/dashboard/student/profile': typeof DashboardStudentProfileRoute
   '/dashboard/student/report-card': typeof DashboardStudentReportCardRoute
+  '/dashboard/student/resources': typeof DashboardStudentResourcesRoute
   '/dashboard/student/search': typeof DashboardStudentSearchRoute
   '/dashboard/student/settings': typeof DashboardStudentSettingsRoute
   '/dashboard/student/subjects': typeof DashboardStudentSubjectsRoute
@@ -556,10 +583,12 @@ export interface FileRoutesById {
   '/dashboard/teacher/classes': typeof DashboardTeacherClassesRoute
   '/dashboard/teacher/documents': typeof DashboardTeacherDocumentsRoute
   '/dashboard/teacher/exams': typeof DashboardTeacherExamsRoute
+  '/dashboard/teacher/grading': typeof DashboardTeacherGradingRoute
   '/dashboard/teacher/lesson-plans': typeof DashboardTeacherLessonPlansRoute
   '/dashboard/teacher/messages': typeof DashboardTeacherMessagesRoute
   '/dashboard/teacher/notifications': typeof DashboardTeacherNotificationsRoute
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
+  '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
@@ -601,6 +630,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -618,10 +648,12 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
+    | '/dashboard/teacher/grading'
     | '/dashboard/teacher/lesson-plans'
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
@@ -658,6 +690,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -675,10 +708,12 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
+    | '/dashboard/teacher/grading'
     | '/dashboard/teacher/lesson-plans'
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student'
     | '/dashboard/super-admin'
@@ -718,6 +753,7 @@ export interface FileRouteTypes {
     | '/dashboard/student/notifications'
     | '/dashboard/student/profile'
     | '/dashboard/student/report-card'
+    | '/dashboard/student/resources'
     | '/dashboard/student/search'
     | '/dashboard/student/settings'
     | '/dashboard/student/subjects'
@@ -735,10 +771,12 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/classes'
     | '/dashboard/teacher/documents'
     | '/dashboard/teacher/exams'
+    | '/dashboard/teacher/grading'
     | '/dashboard/teacher/lesson-plans'
     | '/dashboard/teacher/messages'
     | '/dashboard/teacher/notifications'
     | '/dashboard/teacher/profile'
+    | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
@@ -947,6 +985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardTeacherSubjectsRouteImport
       parentRoute: typeof DashboardTeacherRoute
     }
+    '/dashboard/teacher/resources': {
+      id: '/dashboard/teacher/resources'
+      path: '/resources'
+      fullPath: '/dashboard/teacher/resources'
+      preLoaderRoute: typeof DashboardTeacherResourcesRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
     '/dashboard/teacher/profile': {
       id: '/dashboard/teacher/profile'
       path: '/profile'
@@ -973,6 +1018,13 @@ declare module '@tanstack/react-router' {
       path: '/lesson-plans'
       fullPath: '/dashboard/teacher/lesson-plans'
       preLoaderRoute: typeof DashboardTeacherLessonPlansRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
+    '/dashboard/teacher/grading': {
+      id: '/dashboard/teacher/grading'
+      path: '/grading'
+      fullPath: '/dashboard/teacher/grading'
+      preLoaderRoute: typeof DashboardTeacherGradingRouteImport
       parentRoute: typeof DashboardTeacherRoute
     }
     '/dashboard/teacher/exams': {
@@ -1094,6 +1146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentSearchRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/student/resources': {
+      id: '/dashboard/student/resources'
+      path: '/resources'
+      fullPath: '/dashboard/student/resources'
+      preLoaderRoute: typeof DashboardStudentResourcesRouteImport
+      parentRoute: typeof DashboardStudentRoute
+    }
     '/dashboard/student/report-card': {
       id: '/dashboard/student/report-card'
       path: '/report-card'
@@ -1193,6 +1252,7 @@ interface DashboardStudentRouteChildren {
   DashboardStudentNotificationsRoute: typeof DashboardStudentNotificationsRoute
   DashboardStudentProfileRoute: typeof DashboardStudentProfileRoute
   DashboardStudentReportCardRoute: typeof DashboardStudentReportCardRoute
+  DashboardStudentResourcesRoute: typeof DashboardStudentResourcesRoute
   DashboardStudentSearchRoute: typeof DashboardStudentSearchRoute
   DashboardStudentSettingsRoute: typeof DashboardStudentSettingsRoute
   DashboardStudentSubjectsRoute: typeof DashboardStudentSubjectsRoute
@@ -1212,6 +1272,7 @@ const DashboardStudentRouteChildren: DashboardStudentRouteChildren = {
   DashboardStudentNotificationsRoute: DashboardStudentNotificationsRoute,
   DashboardStudentProfileRoute: DashboardStudentProfileRoute,
   DashboardStudentReportCardRoute: DashboardStudentReportCardRoute,
+  DashboardStudentResourcesRoute: DashboardStudentResourcesRoute,
   DashboardStudentSearchRoute: DashboardStudentSearchRoute,
   DashboardStudentSettingsRoute: DashboardStudentSettingsRoute,
   DashboardStudentSubjectsRoute: DashboardStudentSubjectsRoute,
@@ -1268,10 +1329,12 @@ interface DashboardTeacherRouteChildren {
   DashboardTeacherClassesRoute: typeof DashboardTeacherClassesRoute
   DashboardTeacherDocumentsRoute: typeof DashboardTeacherDocumentsRoute
   DashboardTeacherExamsRoute: typeof DashboardTeacherExamsRoute
+  DashboardTeacherGradingRoute: typeof DashboardTeacherGradingRoute
   DashboardTeacherLessonPlansRoute: typeof DashboardTeacherLessonPlansRoute
   DashboardTeacherMessagesRoute: typeof DashboardTeacherMessagesRoute
   DashboardTeacherNotificationsRoute: typeof DashboardTeacherNotificationsRoute
   DashboardTeacherProfileRoute: typeof DashboardTeacherProfileRoute
+  DashboardTeacherResourcesRoute: typeof DashboardTeacherResourcesRoute
   DashboardTeacherSubjectsRoute: typeof DashboardTeacherSubjectsRoute
   DashboardTeacherIndexRoute: typeof DashboardTeacherIndexRoute
 }
@@ -1283,10 +1346,12 @@ const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
   DashboardTeacherClassesRoute: DashboardTeacherClassesRoute,
   DashboardTeacherDocumentsRoute: DashboardTeacherDocumentsRoute,
   DashboardTeacherExamsRoute: DashboardTeacherExamsRoute,
+  DashboardTeacherGradingRoute: DashboardTeacherGradingRoute,
   DashboardTeacherLessonPlansRoute: DashboardTeacherLessonPlansRoute,
   DashboardTeacherMessagesRoute: DashboardTeacherMessagesRoute,
   DashboardTeacherNotificationsRoute: DashboardTeacherNotificationsRoute,
   DashboardTeacherProfileRoute: DashboardTeacherProfileRoute,
+  DashboardTeacherResourcesRoute: DashboardTeacherResourcesRoute,
   DashboardTeacherSubjectsRoute: DashboardTeacherSubjectsRoute,
   DashboardTeacherIndexRoute: DashboardTeacherIndexRoute,
 }
