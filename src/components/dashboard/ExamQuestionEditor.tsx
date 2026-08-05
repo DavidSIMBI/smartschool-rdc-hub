@@ -201,7 +201,7 @@ export function ExamQuestionEditor({ exam }: { exam: any }) {
           <ul className="space-y-3">
             {rows.map((q, i) => (
               <li key={q.id} className="rounded-xl border border-border p-4">
-                {draft?.id === q.id ? (
+                {draft && draft.id === q.id ? (
                   <QuestionForm draft={draft} setDraft={setDraft} onSave={() => saveQuestion.mutate()} saving={saveQuestion.isPending} />
                 ) : (
                   <div className="flex items-start gap-3">
