@@ -6,6 +6,7 @@ import { Plus, FileText, Save, Send } from "lucide-react";
 import { toast } from "sonner";
 import { TeacherShell } from "@/components/dashboard/TeacherShell";
 import { Button } from "@/components/ui/button";
+import { ExamQuestionEditor } from "@/components/dashboard/ExamQuestionEditor";
 import {
   listExams, saveExam, listMyClasses, getExamResults, saveExamMarks, publishExam,
 } from "@/lib/teacher.functions";
@@ -28,9 +29,10 @@ function ExamsPage() {
   const { data: classes } = useQuery({ queryKey: ["teacher", "classes"], queryFn: () => classesFn() });
 
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ class_id: "", subject_id: "", title: "", exam_date: "", max_score: 100, term: "" });
+  const [form, setForm] = useState({ class_id: "", subject_id: "", title: "", exam_date: "", max_score: 100, term: "", exam_kind: "document" as "document" | "quiz" });
   const [selectedExam, setSelectedExam] = useState<string | null>(null);
   const [scores, setScores] = useState<Record<string, string>>({});
+  const [tab, setTab] = useState<"marks" | "questions">("marks");
 
   const distinctClasses = useMemo(() => {
     const seen = new Set<string>();
@@ -46,8 +48,14 @@ function ExamsPage() {
       exam_date: form.exam_date || null,
       max_score: Number(form.max_score) || 100,
       term: form.term || null,
+      exam_kind: form.exam_kind,
     } }),
-    onSuccess: () => { toast.success("Examen créé"); qc.invalidateQueries({ queryKey: ["teacher", "exams"] }); setOpen(false); },
+    onSuccess: (res: any) => {
+      toast.success("Examen créé");
+      qc.invalidateQueries({ queryKey: ["teacher", "exams"] });
+      setOpen(false);
+      if (form.exam_kind === "quiz" && res?.id) { setSelectedExam(res.id); setTab("questions"); }
+    },
     onError: (e: any) => toast.error(e?.message ?? "Erreur"),
   });
 
@@ -96,6 +104,10 @@ function ExamsPage() {
             <input type="date" className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.exam_date} onChange={(e) => setForm((f) => ({ ...f, exam_date: e.target.value }))} />
             <input type="number" className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Note max." value={form.max_score} onChange={(e) => setForm((f) => ({ ...f, max_score: Number(e.target.value) }))} />
             <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Trimestre (ex. T1)" value={form.term} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} />
+            <select className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.exam_kind} onChange={(e) => setForm((f) => ({ ...f, exam_kind: e.target.value as "document" | "quiz" }))}>
+              <option value="document">Examen sur document</option>
+              <option value="quiz">Questionnaire en ligne</option>
+            </select>
           </div>
           <div className="mt-4 flex justify-end gap-2">
             <Button variant="ghost" onClick={() => setOpen(false)}>Annuler</Button>
@@ -114,12 +126,15 @@ function ExamsPage() {
               {((exams ?? []) as any[]).map((e) => (
                 <li key={e.id}>
                   <button
-                    onClick={() => { setSelectedExam(e.id); setScores({}); }}
+                    onClick={() => { setSelectedExam(e.id); setScores({}); setTab(e.exam_kind === "quiz" ? "questions" : "marks"); }}
                     className={`w-full text-left p-3 rounded-lg text-sm transition-colors ${selectedExam === e.id ? "bg-primary/10 border border-primary/30" : "hover:bg-secondary"}`}
                   >
                     <div className="font-medium">{e.title}</div>
                     <div className="text-xs text-muted-foreground">{e.classes?.name} · {e.subjects?.name ?? "—"}</div>
-                    <div className="text-xs mt-1"><span className="px-2 py-0.5 rounded-full bg-secondary">{e.status}</span></div>
+                    <div className="text-xs mt-1 flex gap-1 flex-wrap">
+                      <span className="px-2 py-0.5 rounded-full bg-secondary">{e.status}</span>
+                      {e.exam_kind === "quiz" && <span className="px-2 py-0.5 rounded-full bg-primary/10 text-primary">questionnaire</span>}
+                    </div>
                   </button>
                 </li>
               ))}
@@ -140,10 +155,19 @@ function ExamsPage() {
                   <p className="text-xs text-muted-foreground">Note max : {examDetail.exam?.max_score}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" className="gap-2" disabled={saveMarks.isPending} onClick={() => saveMarks.mutate()}><Save className="h-4 w-4" /> Enregistrer</Button>
+                  {tab === "marks" && (
+                    <Button size="sm" className="gap-2" disabled={saveMarks.isPending} onClick={() => saveMarks.mutate()}><Save className="h-4 w-4" /> Enregistrer</Button>
+                  )}
                   <Button size="sm" variant="secondary" className="gap-2" onClick={() => publish.mutate()}><Send className="h-4 w-4" /> Publier</Button>
                 </div>
               </div>
+              <div className="mb-4 inline-flex rounded-lg border border-border p-1 text-sm">
+                <button className={`px-3 py-1.5 rounded-md ${tab === "marks" ? "bg-secondary font-medium" : "text-muted-foreground"}`} onClick={() => setTab("marks")}>Notes</button>
+                <button className={`px-3 py-1.5 rounded-md ${tab === "questions" ? "bg-secondary font-medium" : "text-muted-foreground"}`} onClick={() => setTab("questions")}>Questions</button>
+              </div>
+              {tab === "questions" ? (
+                <ExamQuestionEditor exam={examDetail.exam} />
+              ) : (
               <div className="overflow-hidden rounded-xl border border-border">
                 <table className="w-full text-sm">
                   <thead className="bg-secondary/40 text-left">
@@ -176,6 +200,7 @@ function ExamsPage() {
                   </tbody>
                 </table>
               </div>
+              )}
             </>
           )}
         </div>

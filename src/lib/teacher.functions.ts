@@ -776,6 +776,27 @@ export const deleteExamQuestion = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const reorderSchema = z.object({
+  exam_id: z.string().uuid(),
+  order: z.array(z.object({ id: z.string().uuid(), order_index: z.number() })),
+});
+
+export const reorderExamQuestions = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => reorderSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    for (const q of data.order) {
+      const { error } = await supabase
+        .from("exam_questions")
+        .update({ order_index: q.order_index })
+        .eq("id", q.id)
+        .eq("exam_id", data.exam_id);
+      if (error) throw error;
+    }
+    return { ok: true };
+  });
+
 // --- Teaching resources ---
 const resourceSchema = z.object({
   id: z.string().uuid().optional(),
