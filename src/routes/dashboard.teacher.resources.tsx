@@ -6,7 +6,7 @@ import { Plus, Trash2, Pencil, FolderOpen, Upload, Eye, History, ExternalLink } 
 import { toast } from "sonner";
 import { TeacherShell } from "@/components/dashboard/TeacherShell";
 import { Button } from "@/components/ui/button";
-import { listResources, saveResource, deleteResource, listResourceHistory, listMyClasses } from "@/lib/teacher.functions";
+import { listResources, saveResource, deleteResource, listResourceHistory, listMyClasses, getTeacherContext } from "@/lib/teacher.functions";
 import { uploadWithProgress, signedUrl } from "@/lib/storage-upload";
 import {
   ALLOWED_EXTENSIONS, RESOURCE_TYPES, MAX_FILE_SIZE_MB, formatBytes, validateFile, youtubeEmbed,
@@ -46,10 +46,12 @@ function ResourcesPage() {
   const delFn = useServerFn(deleteResource);
   const histFn = useServerFn(listResourceHistory);
   const classesFn = useServerFn(listMyClasses);
+  const ctxFn = useServerFn(getTeacherContext);
 
   const { data: rows } = useQuery({ queryKey: ["teacher", "resources"], queryFn: () => listFn() });
   const { data: classes } = useQuery({ queryKey: ["teacher", "classes"], queryFn: () => classesFn() });
   const { data: history } = useQuery({ queryKey: ["teacher", "resource-history"], queryFn: () => histFn() });
+  const { data: schoolCtx } = useQuery({ queryKey: ["teacher", "context"], queryFn: () => ctxFn() });
 
   const distinctClasses = useMemo(() => {
     const seen = new Set<string>();
@@ -203,8 +205,8 @@ function ResourcesPage() {
               <option value="">Matière (opt.)</option>
               {subjectsForClass.map((r) => <option key={r.subject_id} value={r.subject_id}>{r.subjects?.name}</option>)}
             </select>
-            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Année académique (ex. 2025-2026)" value={form.academic_year} onChange={(e) => setForm((f) => ({ ...f, academic_year: e.target.value }))} />
-            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Trimestre (ex. T1)" value={form.term} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} />
+            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Année académique (ex. 2025-2026)" value={form.academic_year || (schoolCtx?.academic_year ?? "")} onChange={(e) => setForm((f) => ({ ...f, academic_year: e.target.value }))} />
+            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Trimestre (ex. T1)" value={form.term || (schoolCtx?.current_term ?? "")} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} />
             <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Thème / chapitre" value={form.topic} onChange={(e) => setForm((f) => ({ ...f, topic: e.target.value }))} />
 
             {form.resource_type === "video_link" ? (
