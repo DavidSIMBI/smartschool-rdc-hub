@@ -8,7 +8,7 @@ import { TeacherShell } from "@/components/dashboard/TeacherShell";
 import { Button } from "@/components/ui/button";
 import { ExamQuestionEditor } from "@/components/dashboard/ExamQuestionEditor";
 import {
-  listExams, saveExam, listMyClasses, getExamResults, saveExamMarks, publishExam,
+  listExams, saveExam, listMyClasses, getExamResults, saveExamMarks, publishExam, getTeacherContext,
 } from "@/lib/teacher.functions";
 
 export const Route = createFileRoute("/dashboard/teacher/exams")({
@@ -24,9 +24,11 @@ function ExamsPage() {
   const resultsFn = useServerFn(getExamResults);
   const marksFn = useServerFn(saveExamMarks);
   const publishFn = useServerFn(publishExam);
+  const ctxFn = useServerFn(getTeacherContext);
 
   const { data: exams } = useQuery({ queryKey: ["teacher", "exams"], queryFn: () => listFn() });
   const { data: classes } = useQuery({ queryKey: ["teacher", "classes"], queryFn: () => classesFn() });
+  const { data: schoolCtx } = useQuery({ queryKey: ["teacher", "context"], queryFn: () => ctxFn() });
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ class_id: "", subject_id: "", title: "", exam_date: "", max_score: 100, term: "", exam_kind: "document" as "document" | "quiz" });
