@@ -33,6 +33,7 @@ import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-pas
 import { Route as DashboardTeacherIndexRouteImport } from './routes/dashboard.teacher.index'
 import { Route as DashboardSuperAdminIndexRouteImport } from './routes/dashboard.super-admin.index'
 import { Route as DashboardStudentIndexRouteImport } from './routes/dashboard.student.index'
+import { Route as DashboardTeacherTimetableRouteImport } from './routes/dashboard.teacher.timetable'
 import { Route as DashboardTeacherSubjectsRouteImport } from './routes/dashboard.teacher.subjects'
 import { Route as DashboardTeacherResourcesRouteImport } from './routes/dashboard.teacher.resources'
 import { Route as DashboardTeacherProfileRouteImport } from './routes/dashboard.teacher.profile'
@@ -46,6 +47,7 @@ import { Route as DashboardTeacherClassesRouteImport } from './routes/dashboard.
 import { Route as DashboardTeacherCalendarRouteImport } from './routes/dashboard.teacher.calendar'
 import { Route as DashboardTeacherAttendanceRouteImport } from './routes/dashboard.teacher.attendance'
 import { Route as DashboardTeacherAssignmentsRouteImport } from './routes/dashboard.teacher.assignments'
+import { Route as DashboardTeacherAnnouncementsRouteImport } from './routes/dashboard.teacher.announcements'
 import { Route as DashboardSuperAdminSubscriptionsRouteImport } from './routes/dashboard.super-admin.subscriptions'
 import { Route as DashboardSuperAdminSettingsRouteImport } from './routes/dashboard.super-admin.settings'
 import { Route as DashboardSuperAdminSchoolsRouteImport } from './routes/dashboard.super-admin.schools'
@@ -192,6 +194,12 @@ const DashboardStudentIndexRoute = DashboardStudentIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DashboardStudentRoute,
 } as any)
+const DashboardTeacherTimetableRoute =
+  DashboardTeacherTimetableRouteImport.update({
+    id: '/timetable',
+    path: '/timetable',
+    getParentRoute: () => DashboardTeacherRoute,
+  } as any)
 const DashboardTeacherSubjectsRoute =
   DashboardTeacherSubjectsRouteImport.update({
     id: '/subjects',
@@ -264,6 +272,12 @@ const DashboardTeacherAssignmentsRoute =
   DashboardTeacherAssignmentsRouteImport.update({
     id: '/assignments',
     path: '/assignments',
+    getParentRoute: () => DashboardTeacherRoute,
+  } as any)
+const DashboardTeacherAnnouncementsRoute =
+  DashboardTeacherAnnouncementsRouteImport.update({
+    id: '/announcements',
+    path: '/announcements',
     getParentRoute: () => DashboardTeacherRoute,
   } as any)
 const DashboardSuperAdminSubscriptionsRoute =
@@ -453,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/super-admin/schools': typeof DashboardSuperAdminSchoolsRouteWithChildren
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
+  '/dashboard/teacher/announcements': typeof DashboardTeacherAnnouncementsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
   '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
@@ -466,6 +481,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
   '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
+  '/dashboard/teacher/timetable': typeof DashboardTeacherTimetableRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
   '/dashboard/teacher/': typeof DashboardTeacherIndexRoute
@@ -513,6 +529,7 @@ export interface FileRoutesByTo {
   '/dashboard/super-admin/schools': typeof DashboardSuperAdminSchoolsRouteWithChildren
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
+  '/dashboard/teacher/announcements': typeof DashboardTeacherAnnouncementsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
   '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
@@ -526,6 +543,7 @@ export interface FileRoutesByTo {
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
   '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
+  '/dashboard/teacher/timetable': typeof DashboardTeacherTimetableRoute
   '/dashboard/student': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin': typeof DashboardSuperAdminIndexRoute
   '/dashboard/teacher': typeof DashboardTeacherIndexRoute
@@ -577,6 +595,7 @@ export interface FileRoutesById {
   '/dashboard/super-admin/schools': typeof DashboardSuperAdminSchoolsRouteWithChildren
   '/dashboard/super-admin/settings': typeof DashboardSuperAdminSettingsRoute
   '/dashboard/super-admin/subscriptions': typeof DashboardSuperAdminSubscriptionsRoute
+  '/dashboard/teacher/announcements': typeof DashboardTeacherAnnouncementsRoute
   '/dashboard/teacher/assignments': typeof DashboardTeacherAssignmentsRoute
   '/dashboard/teacher/attendance': typeof DashboardTeacherAttendanceRoute
   '/dashboard/teacher/calendar': typeof DashboardTeacherCalendarRoute
@@ -590,6 +609,7 @@ export interface FileRoutesById {
   '/dashboard/teacher/profile': typeof DashboardTeacherProfileRoute
   '/dashboard/teacher/resources': typeof DashboardTeacherResourcesRoute
   '/dashboard/teacher/subjects': typeof DashboardTeacherSubjectsRoute
+  '/dashboard/teacher/timetable': typeof DashboardTeacherTimetableRoute
   '/dashboard/student/': typeof DashboardStudentIndexRoute
   '/dashboard/super-admin/': typeof DashboardSuperAdminIndexRoute
   '/dashboard/teacher/': typeof DashboardTeacherIndexRoute
@@ -642,6 +662,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/schools'
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
+    | '/dashboard/teacher/announcements'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
     | '/dashboard/teacher/calendar'
@@ -655,6 +676,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/profile'
     | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
+    | '/dashboard/teacher/timetable'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
     | '/dashboard/teacher/'
@@ -702,6 +724,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/schools'
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
+    | '/dashboard/teacher/announcements'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
     | '/dashboard/teacher/calendar'
@@ -715,6 +738,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/profile'
     | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
+    | '/dashboard/teacher/timetable'
     | '/dashboard/student'
     | '/dashboard/super-admin'
     | '/dashboard/teacher'
@@ -765,6 +789,7 @@ export interface FileRouteTypes {
     | '/dashboard/super-admin/schools'
     | '/dashboard/super-admin/settings'
     | '/dashboard/super-admin/subscriptions'
+    | '/dashboard/teacher/announcements'
     | '/dashboard/teacher/assignments'
     | '/dashboard/teacher/attendance'
     | '/dashboard/teacher/calendar'
@@ -778,6 +803,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher/profile'
     | '/dashboard/teacher/resources'
     | '/dashboard/teacher/subjects'
+    | '/dashboard/teacher/timetable'
     | '/dashboard/student/'
     | '/dashboard/super-admin/'
     | '/dashboard/teacher/'
@@ -978,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentIndexRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/dashboard/teacher/timetable': {
+      id: '/dashboard/teacher/timetable'
+      path: '/timetable'
+      fullPath: '/dashboard/teacher/timetable'
+      preLoaderRoute: typeof DashboardTeacherTimetableRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
     '/dashboard/teacher/subjects': {
       id: '/dashboard/teacher/subjects'
       path: '/subjects'
@@ -1067,6 +1100,13 @@ declare module '@tanstack/react-router' {
       path: '/assignments'
       fullPath: '/dashboard/teacher/assignments'
       preLoaderRoute: typeof DashboardTeacherAssignmentsRouteImport
+      parentRoute: typeof DashboardTeacherRoute
+    }
+    '/dashboard/teacher/announcements': {
+      id: '/dashboard/teacher/announcements'
+      path: '/announcements'
+      fullPath: '/dashboard/teacher/announcements'
+      preLoaderRoute: typeof DashboardTeacherAnnouncementsRouteImport
       parentRoute: typeof DashboardTeacherRoute
     }
     '/dashboard/super-admin/subscriptions': {
@@ -1323,6 +1363,7 @@ const DashboardSuperAdminRouteWithChildren =
   DashboardSuperAdminRoute._addFileChildren(DashboardSuperAdminRouteChildren)
 
 interface DashboardTeacherRouteChildren {
+  DashboardTeacherAnnouncementsRoute: typeof DashboardTeacherAnnouncementsRoute
   DashboardTeacherAssignmentsRoute: typeof DashboardTeacherAssignmentsRoute
   DashboardTeacherAttendanceRoute: typeof DashboardTeacherAttendanceRoute
   DashboardTeacherCalendarRoute: typeof DashboardTeacherCalendarRoute
@@ -1336,10 +1377,12 @@ interface DashboardTeacherRouteChildren {
   DashboardTeacherProfileRoute: typeof DashboardTeacherProfileRoute
   DashboardTeacherResourcesRoute: typeof DashboardTeacherResourcesRoute
   DashboardTeacherSubjectsRoute: typeof DashboardTeacherSubjectsRoute
+  DashboardTeacherTimetableRoute: typeof DashboardTeacherTimetableRoute
   DashboardTeacherIndexRoute: typeof DashboardTeacherIndexRoute
 }
 
 const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
+  DashboardTeacherAnnouncementsRoute: DashboardTeacherAnnouncementsRoute,
   DashboardTeacherAssignmentsRoute: DashboardTeacherAssignmentsRoute,
   DashboardTeacherAttendanceRoute: DashboardTeacherAttendanceRoute,
   DashboardTeacherCalendarRoute: DashboardTeacherCalendarRoute,
@@ -1353,6 +1396,7 @@ const DashboardTeacherRouteChildren: DashboardTeacherRouteChildren = {
   DashboardTeacherProfileRoute: DashboardTeacherProfileRoute,
   DashboardTeacherResourcesRoute: DashboardTeacherResourcesRoute,
   DashboardTeacherSubjectsRoute: DashboardTeacherSubjectsRoute,
+  DashboardTeacherTimetableRoute: DashboardTeacherTimetableRoute,
   DashboardTeacherIndexRoute: DashboardTeacherIndexRoute,
 }
 
@@ -1385,13 +1429,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
