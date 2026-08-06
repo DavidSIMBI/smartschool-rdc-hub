@@ -129,6 +129,7 @@ export const getClassDetail = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
+    await assertTeachesClass(supabase, context.userId, data.id);
     const [{ data: cls }, { data: students }] = await Promise.all([
       supabase.from("classes").select("*").eq("id", data.id).maybeSingle(),
       supabase.from("students").select("*").eq("class_id", data.id).order("last_name"),
