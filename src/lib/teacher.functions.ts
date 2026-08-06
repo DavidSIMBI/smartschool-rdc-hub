@@ -129,6 +129,7 @@ export const getClassDetail = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => idSchema.parse(d))
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
+    await assertTeachesClass(supabase, context.userId, data.id);
     const [{ data: cls }, { data: students }] = await Promise.all([
       supabase.from("classes").select("*").eq("id", data.id).maybeSingle(),
       supabase.from("students").select("*").eq("class_id", data.id).order("last_name"),
@@ -1001,4 +1002,99 @@ export const publishAssignmentGrades = createServerFn({ method: "POST" })
       await notifyUsers(supabase, (students ?? []).map((s: any) => s.user_id), "grade", "Notes publiées", assignment?.title ?? "Devoir");
     }
     return { count: (rows ?? []).length };
+  });
+
+/* ------------------------------------------------------------------ */
+/* timetable (read-only: built by the school administration)           */
+/* ------------------------------------------------------------------ */
+
+export const listMyTimetable = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) return [];
+    const { data } = await supabase
+      .from("timetable_slots")
+      .select("id, day_of_week, start_time, end_time, room, classes(name, level), subjects(name, code)")
+      .eq("school_id", teacher.school_id)
+      .eq("teacher_id", teacher.id)
+      .order("day_of_week")
+      .order("start_time");
+    return data ?? [];
+  });
+
+/* ------------------------------------------------------------------ */
+/* school context (academic year / term from school settings)          */
+/* ------------------------------------------------------------------ */
+
+export const getTeacherContext = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) return { academic_year: null, current_term: null };
+    const { data } = await supabase
+      .from("schools")
+      .select("academic_year, current_term")
+      .eq("id", teacher.school_id)
+      .maybeSingle();
+    return { academic_year: data?.academic_year ?? null, current_term: data?.current_term ?? null };
+  });
+
+/* ------------------------------------------------------------------ */
+/* announcements to the teacher's classes                              */
+/* ------------------------------------------------------------------ */
+
+export const listTeacherAnnouncements = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) return [];
+    const { data } = await supabase
+      .from("announcements")
+      .select("id, title, body, audience, status, publish_at, created_at, author_id")
+      .eq("school_id", teacher.school_id)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    return data ?? [];
+  });
+
+export const sendTeacherAnnouncement = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        title: z.string().trim().min(1).max(160),
+        body: z.string().max(5000).optional().nullable(),
+        class_id: z.string().uuid().optional().nullable(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const teacher = await getTeacherRow(supabase, context.userId);
+    if (!teacher) throw new Error("Profil enseignant introuvable");
+    if (data.class_id) await assertTeachesClass(supabase, context.userId, data.class_id);
+
+    const { data: ins, error } = await supabase
+      .from("announcements")
+      .insert({
+        school_id: teacher.school_id,
+        author_id: context.userId,
+        title: data.title,
+        body: data.body ?? null,
+        audience: data.class_id ? "class" : "students",
+        status: "published",
+        publish_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (error) throw error;
+
+    if (data.class_id) {
+      await notifyClassStudents(supabase, data.class_id, "announcement", "Nouvelle annonce", data.title);
+    }
+    return { id: ins.id };
   });

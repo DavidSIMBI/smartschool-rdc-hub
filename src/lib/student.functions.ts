@@ -70,7 +70,8 @@ export const getStudentOverview = createServerFn({ method: "GET" })
             .from("exams")
             .select("id", { count: "exact", head: true })
             .eq("class_id", student.class_id)
-            .eq("status", "draft")
+            .eq("status", "published")
+            .gte("exam_date", new Date().toISOString().slice(0, 10))
         : Promise.resolve({ count: 0 }),
       supabase.from("messages").select("id", { count: "exact", head: true }).eq("recipient_id", context.userId).is("read_at", null),
       supabase.from("announcements").select("id", { count: "exact", head: true }).eq("school_id", student.school_id),
@@ -148,6 +149,8 @@ export const listStudentAssignments = createServerFn({ method: "GET" })
         .from("assignments")
         .select("*, subjects(name), teachers(first_name, last_name)")
         .eq("class_id", student.class_id)
+        .not("published_at", "is", null)
+        .neq("status", "archived")
         .order("due_date", { ascending: true, nullsFirst: false }),
       supabase.from("assignment_submissions").select("*").eq("student_id", student.id),
     ]);
@@ -232,6 +235,7 @@ export const listStudentExams = createServerFn({ method: "GET" })
         .from("exams")
         .select("*, subjects(name)")
         .eq("class_id", student.class_id)
+        .eq("status", "published")
         .order("exam_date", { ascending: false, nullsFirst: false }),
       supabase.from("exam_results").select("*").eq("student_id", student.id),
     ]);
@@ -349,6 +353,8 @@ export const listStudentAnnouncements = createServerFn({ method: "GET" })
       .from("announcements")
       .select("*")
       .eq("school_id", student.school_id)
+      .eq("status", "published")
+      .or(`publish_at.is.null,publish_at.lte.${new Date().toISOString()}`)
       .order("created_at", { ascending: false })
       .limit(50);
     return data ?? [];
@@ -448,6 +454,8 @@ export const listStudentResources = createServerFn({ method: "GET" })
     const { data } = await supabase
       .from("teaching_resources")
       .select("*, subjects(name), classes(name), teachers(first_name, last_name)")
+      .eq("school_id", student.school_id)
+      .or(`class_id.is.null,class_id.eq.${student.class_id ?? "00000000-0000-0000-0000-000000000000"}`)
       .eq("status", "published")
       .lte("publish_at", new Date().toISOString())
       .order("publish_at", { ascending: false })
