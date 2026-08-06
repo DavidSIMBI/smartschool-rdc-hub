@@ -49,7 +49,7 @@ function ExamsPage() {
       title: form.title,
       exam_date: form.exam_date || null,
       max_score: Number(form.max_score) || 100,
-      term: form.term || null,
+      term: form.term || schoolCtx?.current_term || null,
       exam_kind: form.exam_kind,
     } }),
     onSuccess: (res: any) => {
@@ -105,7 +105,7 @@ function ExamsPage() {
             <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Titre" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} />
             <input type="date" className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.exam_date} onChange={(e) => setForm((f) => ({ ...f, exam_date: e.target.value }))} />
             <input type="number" className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Note max." value={form.max_score} onChange={(e) => setForm((f) => ({ ...f, max_score: Number(e.target.value) }))} />
-            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Trimestre (ex. T1)" value={form.term} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} />
+            <input className="rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="Trimestre (ex. T1)" value={form.term || (schoolCtx?.current_term ?? "")} onChange={(e) => setForm((f) => ({ ...f, term: e.target.value }))} />
             <select className="rounded-md border border-input bg-background px-3 py-2 text-sm" value={form.exam_kind} onChange={(e) => setForm((f) => ({ ...f, exam_kind: e.target.value as "document" | "quiz" }))}>
               <option value="document">Examen sur document</option>
               <option value="quiz">Questionnaire en ligne</option>
