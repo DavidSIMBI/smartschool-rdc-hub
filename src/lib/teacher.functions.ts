@@ -26,17 +26,39 @@ async function assertTeachesClass(supabase: any, userId: string, classId?: strin
   }
 }
 
-async function notifyUsers(supabase: any, userIds: (string | null | undefined)[], type: string, title: string, body: string) {
+async function notifyUsers(
+  supabase: any,
+  userIds: (string | null | undefined)[],
+  type: string,
+  title: string,
+  body: string,
+  callerId?: string,
+) {
   const ids = Array.from(new Set(userIds.filter(Boolean))) as string[];
+  if (ids.length === 0 || !callerId) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   for (const id of ids) {
-    await supabase.rpc("notify_school_user", { _user_id: id, _type: type, _title: title, _body: body });
+    await (supabaseAdmin as any).rpc("notify_user_as", {
+      _caller_id: callerId,
+      _user_id: id,
+      _type: type,
+      _title: title,
+      _body: body,
+    });
   }
 }
 
-async function notifyClassStudents(supabase: any, classId: string | null | undefined, type: string, title: string, body: string) {
+async function notifyClassStudents(
+  supabase: any,
+  classId: string | null | undefined,
+  type: string,
+  title: string,
+  body: string,
+  callerId?: string,
+) {
   if (!classId) return;
   const { data } = await supabase.from("students").select("user_id").eq("class_id", classId).not("user_id", "is", null);
-  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body);
+  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body, callerId);
 }
 
 export const getTeacherOverview = createServerFn({ method: "GET" })
