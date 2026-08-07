@@ -26,17 +26,39 @@ async function assertTeachesClass(supabase: any, userId: string, classId?: strin
   }
 }
 
-async function notifyUsers(supabase: any, userIds: (string | null | undefined)[], type: string, title: string, body: string) {
+async function notifyUsers(
+  supabase: any,
+  userIds: (string | null | undefined)[],
+  type: string,
+  title: string,
+  body: string,
+  callerId?: string,
+) {
   const ids = Array.from(new Set(userIds.filter(Boolean))) as string[];
+  if (ids.length === 0 || !callerId) return;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   for (const id of ids) {
-    await supabase.rpc("notify_school_user", { _user_id: id, _type: type, _title: title, _body: body });
+    await (supabaseAdmin as any).rpc("notify_user_as", {
+      _caller_id: callerId,
+      _user_id: id,
+      _type: type,
+      _title: title,
+      _body: body,
+    });
   }
 }
 
-async function notifyClassStudents(supabase: any, classId: string | null | undefined, type: string, title: string, body: string) {
+async function notifyClassStudents(
+  supabase: any,
+  classId: string | null | undefined,
+  type: string,
+  title: string,
+  body: string,
+  callerId?: string,
+) {
   if (!classId) return;
   const { data } = await supabase.from("students").select("user_id").eq("class_id", classId).not("user_id", "is", null);
-  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body);
+  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body, callerId);
 }
 
 export const getTeacherOverview = createServerFn({ method: "GET" })
@@ -268,14 +290,14 @@ export const saveAssignment = createServerFn({ method: "POST" })
       const { error } = await supabase.from("assignments").update(payload).eq("id", data.id);
       if (error) throw error;
       if (data.publish) {
-        await notifyClassStudents(supabase, data.class_id, "assignment", "Devoir publié", data.title);
+        await notifyClassStudents(supabase, data.class_id, "assignment", "Devoir publié", data.title, context.userId);
       }
       return { id: data.id };
     }
     const { data: row, error } = await supabase.from("assignments").insert(payload).select("id").maybeSingle();
     if (error) throw error;
     if (data.publish) {
-      await notifyClassStudents(supabase, data.class_id, "assignment", "Nouveau devoir publié", data.title);
+      await notifyClassStudents(supabase, data.class_id, "assignment", "Nouveau devoir publié", data.title, context.userId);
     }
     return { id: row!.id };
   });
@@ -292,7 +314,7 @@ export const publishAssignment = createServerFn({ method: "POST" })
       .select("title, class_id")
       .maybeSingle();
     if (error) throw error;
-    if (row) await notifyClassStudents(supabase, row.class_id, "assignment", "Nouveau devoir publié", row.title);
+    if (row) await notifyClassStudents(supabase, row.class_id, "assignment", "Nouveau devoir publié", row.title, context.userId);
     return { ok: true };
   });
 
@@ -444,7 +466,7 @@ export const publishExam = createServerFn({ method: "POST" })
       .select("title, class_id")
       .maybeSingle();
     if (error) throw error;
-    if (row) await notifyClassStudents(supabase, row.class_id, "exam", "Examen publié", row.title);
+    if (row) await notifyClassStudents(supabase, row.class_id, "exam", "Examen publié", row.title, context.userId);
     return { ok: true };
   });
 
@@ -887,7 +909,7 @@ export const saveResource = createServerFn({ method: "POST" })
     });
 
     if (status === "published") {
-      await notifyClassStudents(supabase, data.class_id, "resource", "Nouvelle ressource pédagogique", data.title);
+      await notifyClassStudents(supabase, data.class_id, "resource", "Nouvelle ressource pédagogique", data.title, context.userId);
     }
     return { id: resourceId };
   });
@@ -977,7 +999,7 @@ export const gradeSubmission = createServerFn({ method: "POST" })
         supabase.from("students").select("user_id").eq("id", row.student_id).maybeSingle(),
         supabase.from("assignments").select("title").eq("id", row.assignment_id).maybeSingle(),
       ]);
-      await notifyUsers(supabase, [student?.user_id], "grade", "Devoir corrigé", assignment?.title ?? "Votre devoir a été corrigé");
+      await notifyUsers(supabase, [student?.user_id], "grade", "Devoir corrigé", assignment?.title ?? "Votre devoir a été corrigé", context.userId);
     }
     return { ok: true };
   });
@@ -999,7 +1021,7 @@ export const publishAssignmentGrades = createServerFn({ method: "POST" })
     const ids = (rows ?? []).map((r: any) => r.student_id);
     if (ids.length) {
       const { data: students } = await supabase.from("students").select("user_id").in("id", ids);
-      await notifyUsers(supabase, (students ?? []).map((s: any) => s.user_id), "grade", "Notes publiées", assignment?.title ?? "Devoir");
+      await notifyUsers(supabase, (students ?? []).map((s: any) => s.user_id), "grade", "Notes publiées", assignment?.title ?? "Devoir", context.userId);
     }
     return { count: (rows ?? []).length };
   });
@@ -1094,7 +1116,7 @@ export const sendTeacherAnnouncement = createServerFn({ method: "POST" })
     if (error) throw error;
 
     if (data.class_id) {
-      await notifyClassStudents(supabase, data.class_id, "announcement", "Nouvelle annonce", data.title);
+      await notifyClassStudents(supabase, data.class_id, "announcement", "Nouvelle annonce", data.title, context.userId);
     }
     return { id: ins.id };
   });
