@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { StudentShell } from "@/components/dashboard/StudentShell";
-import { listStudentAssignments, submitAssignment } from "@/lib/student.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { listStudentAssignments, submitAssignment, prepareSubmissionUpload } from "@/lib/student.functions";
+import { uploadWithProgress } from "@/lib/storage-upload";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -22,35 +22,45 @@ function AssignmentsPage() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<number | null>(null);
 
   const submit = useMutation({
     mutationFn: (p: any) => submitAssignment({ data: p }),
-    onSuccess: () => {
+    onSuccess: (r: any) => {
       qc.invalidateQueries({ queryKey: ["student-assignments"] });
       qc.invalidateQueries({ queryKey: ["student-overview"] });
-      toast.success("Devoir envoyé");
+      toast.success(r?.is_late ? "Travail envoyé (remise tardive)" : "Votre travail a été envoyé avec succès.");
       setOpenId(null); setContent("");
     },
-    onError: (e: any) => toast.error(e.message ?? "Échec"),
+    onError: (e: any) => toast.error(e?.message || "Votre remise n'a pas pu être enregistrée. Réessayez."),
   });
 
   async function handleSubmit(assignmentId: string, file: File | null) {
     setBusy(true);
     try {
-      let file_url: string | null = null;
+      let filePayload: {
+        file_path?: string | null;
+        file_name?: string | null;
+        file_type?: string | null;
+        file_size?: number | null;
+      } = {};
       if (file) {
         const err = validateFile(file, SUBMISSION_EXTENSIONS);
         if (err) { toast.error(err); return; }
-        const path = `submissions/${assignmentId}/${Date.now()}-${file.name}`;
-        const { error } = await supabase.storage.from("teacher-materials").upload(path, file, { upsert: true });
-        if (error) throw error;
-        const { data: signed } = await supabase.storage.from("teacher-materials").createSignedUrl(path, 60 * 60 * 24 * 30);
-        file_url = signed?.signedUrl ?? null;
+        const prep = await prepareSubmissionUpload({ data: { assignment_id: assignmentId, file_name: file.name } });
+        setProgress(0);
+        await uploadWithProgress(prep.bucket, prep.path, file, setProgress);
+        filePayload = {
+          file_path: prep.path,
+          file_name: file.name,
+          file_type: file.type || null,
+          file_size: file.size,
+        };
       }
-      await submit.mutateAsync({ assignment_id: assignmentId, content: content || null, file_url });
+      await submit.mutateAsync({ assignment_id: assignmentId, content: content || null, ...filePayload });
     } catch (e: any) {
-      toast.error(e.message ?? "Échec");
-    } finally { setBusy(false); }
+      toast.error(e?.message || "Votre remise n'a pas pu être envoyée. Vérifiez votre connexion et réessayez.");
+    } finally { setBusy(false); setProgress(null); }
   }
 
   return (
@@ -99,7 +109,11 @@ function AssignmentsPage() {
                       <div className="mt-3 rounded-lg bg-secondary/50 p-3 text-sm">
                         <div className="text-xs text-muted-foreground">Remis le {new Date(sub.submitted_at).toLocaleString("fr-FR")}{sub.is_late ? " · en retard" : ""}</div>
                         {sub.content && <div className="whitespace-pre-wrap">{sub.content}</div>}
-                        {sub.file_url && <a className="text-primary underline text-xs" href={sub.file_url} target="_blank" rel="noreferrer">Voir le fichier</a>}
+                        {sub.file_url && (
+                          <a className="text-primary underline text-xs" href={sub.file_url} target="_blank" rel="noreferrer">
+                            {sub.file_name ?? "Voir le fichier"}
+                          </a>
+                        )}
                         {sub.grade !== null && <div className="mt-1 text-xs">Note: <strong>{sub.grade}</strong></div>}
                         {sub.feedback && <div className="mt-1 text-xs italic">Retour: {sub.feedback}</div>}
                       </div>
@@ -113,12 +127,18 @@ function AssignmentsPage() {
                   <div className="mt-4 space-y-3">
                     <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Votre réponse…" rows={4} />
                     <label className="inline-flex items-center gap-2 text-sm text-primary cursor-pointer">
-                      <Upload className="h-4 w-4" /> Joindre un fichier
-                      <input type="file" hidden onChange={(e) => {
+                      <Upload className="h-4 w-4" /> Joindre un fichier (PDF, Word, PowerPoint, Excel, image, ZIP — max 50 Mo)
+                      <input type="file" hidden disabled={busy} accept={SUBMISSION_EXTENSIONS.map((x) => `.${x}`).join(",")} onChange={(e) => {
                         const f = e.target.files?.[0] ?? null;
+                        e.target.value = "";
                         handleSubmit(a.id, f);
                       }} />
                     </label>
+                    {progress !== null && (
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                        <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <Button size="sm" disabled={busy || submit.isPending} onClick={() => handleSubmit(a.id, null)}>Envoyer texte</Button>
                       <Button size="sm" variant="ghost" onClick={() => setOpenId(null)}>Annuler</Button>
