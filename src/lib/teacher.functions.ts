@@ -58,7 +58,7 @@ async function notifyClassStudents(
 ) {
   if (!classId) return;
   const { data } = await supabase.from("students").select("user_id").eq("class_id", classId).not("user_id", "is", null);
-  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body, callerId, context.userId);
+  await notifyUsers(supabase, (data ?? []).map((s: any) => s.user_id), type, title, body, callerId);
 }
 
 export const getTeacherOverview = createServerFn({ method: "GET" })
