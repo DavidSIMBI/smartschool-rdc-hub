@@ -119,7 +119,7 @@ function GradingPage() {
                     <td className="px-4 py-3">
                       {sub?.file_url ? (
                         <a href={sub.file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-xs">
-                          <Download className="h-3 w-3" /> Télécharger
+                          <Download className="h-3 w-3" /> {sub.file_name ?? "Télécharger"}
                         </a>
                       ) : <span className="text-muted-foreground text-xs">—</span>}
                     </td>
