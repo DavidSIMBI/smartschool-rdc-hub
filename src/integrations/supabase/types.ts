@@ -113,6 +113,10 @@ export type Database = {
           assignment_id: string
           content: string | null
           feedback: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          file_type: string | null
           file_url: string | null
           grade: number | null
           grade_published: boolean
@@ -121,6 +125,7 @@ export type Database = {
           id: string
           is_late: boolean
           returned_at: string | null
+          status: string
           student_id: string
           submitted_at: string
         }
@@ -128,6 +133,10 @@ export type Database = {
           assignment_id: string
           content?: string | null
           feedback?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           file_url?: string | null
           grade?: number | null
           grade_published?: boolean
@@ -136,6 +145,7 @@ export type Database = {
           id?: string
           is_late?: boolean
           returned_at?: string | null
+          status?: string
           student_id: string
           submitted_at?: string
         }
@@ -143,6 +153,10 @@ export type Database = {
           assignment_id?: string
           content?: string | null
           feedback?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          file_type?: string | null
           file_url?: string | null
           grade?: number | null
           grade_published?: boolean
@@ -151,6 +165,7 @@ export type Database = {
           id?: string
           is_late?: boolean
           returned_at?: string | null
+          status?: string
           student_id?: string
           submitted_at?: string
         }

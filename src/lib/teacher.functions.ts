@@ -964,7 +964,16 @@ export const listSubmissions = createServerFn({ method: "POST" })
       supabase.from("students").select("id, first_name, last_name, matricule, user_id").eq("class_id", assignment.class_id).order("last_name"),
       supabase.from("assignment_submissions").select("*").eq("assignment_id", data.id),
     ]);
-    return { assignment, students: students ?? [], submissions: submissions ?? [] };
+    const withUrls = await Promise.all(
+      ((submissions ?? []) as any[]).map(async (s) => {
+        if (!s.file_path) return s;
+        const { data: signed } = await supabase.storage
+          .from("teacher-materials")
+          .createSignedUrl(s.file_path, 60 * 60);
+        return { ...s, file_url: signed?.signedUrl ?? s.file_url ?? null };
+      }),
+    );
+    return { assignment, students: students ?? [], submissions: withUrls };
   });
 
 const gradeSchema = z.object({

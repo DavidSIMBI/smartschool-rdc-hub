@@ -156,9 +156,14 @@ export const listStudentAssignments = createServerFn({ method: "GET" })
     ]);
     const bySub: Record<string, any> = {};
     for (const s of (subs ?? []) as any[]) {
-      bySub[s.assignment_id] = s.grade_published
-        ? s
-        : { ...s, grade: null, feedback: null };
+      const visible = s.grade_published ? s : { ...s, grade: null, feedback: null };
+      if (visible.file_path) {
+        const { data: signed } = await supabase.storage
+          .from("teacher-materials")
+          .createSignedUrl(visible.file_path, 60 * 60);
+        visible.file_url = signed?.signedUrl ?? visible.file_url ?? null;
+      }
+      bySub[s.assignment_id] = visible;
     }
     return (assignments ?? []).map((a: any) => ({ ...a, submission: bySub[a.id] ?? null }));
   });
@@ -166,8 +171,55 @@ export const listStudentAssignments = createServerFn({ method: "GET" })
 const submitSchema = z.object({
   assignment_id: z.string().uuid(),
   content: z.string().optional().nullable(),
-  file_url: z.string().optional().nullable(),
+  file_path: z.string().optional().nullable(),
+  file_name: z.string().optional().nullable(),
+  file_type: z.string().optional().nullable(),
+  file_size: z.number().optional().nullable(),
 });
+
+/**
+ * Validates that the signed-in student may submit to this assignment and
+ * returns the storage path the file must be uploaded to. The path starts with
+ * the school id, which is required by the storage access rules.
+ */
+export const prepareSubmissionUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ assignment_id: z.string().uuid(), file_name: z.string().min(1) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) throw new Error("Profil élève introuvable. Contactez le secrétariat de votre école.");
+    const assignment = await loadSubmittableAssignment(supabase, data.assignment_id, student);
+    const safeName = data.file_name.replace(/[^A-Za-z0-9._-]+/g, "_").slice(-120);
+    return {
+      bucket: "teacher-materials",
+      path: `${student.school_id}/submissions/${assignment.id}/${student.id}/${Date.now()}-${safeName}`,
+      is_late: assignment.is_late,
+    };
+  });
+
+async function loadSubmittableAssignment(supabase: any, assignmentId: string, student: any) {
+  const { data: assignment, error } = await supabase
+    .from("assignments")
+    .select("id, title, class_id, due_date, allow_late, status, open_at, teacher_id, published_at")
+    .eq("id", assignmentId)
+    .maybeSingle();
+  if (error) throw new Error("Impossible de charger ce devoir. Réessayez.");
+  if (!assignment) throw new Error("Devoir introuvable");
+  if (assignment.class_id !== student.class_id) throw new Error("Ce devoir n'est pas destiné à votre classe");
+  if (!assignment.published_at) throw new Error("Ce devoir n'est pas encore publié");
+  if (assignment.open_at && new Date(assignment.open_at) > new Date()) {
+    throw new Error("Ce devoir n'est pas encore ouvert");
+  }
+  if (assignment.status !== "open") throw new Error("Ce devoir est clôturé");
+  const is_late = Boolean(assignment.due_date) && new Date(assignment.due_date) < new Date();
+  if (is_late && !assignment.allow_late) {
+    throw new Error("La date limite est dépassée : les remises tardives ne sont pas autorisées");
+  }
+  return { ...assignment, is_late };
+}
 
 export const submitAssignment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -175,32 +227,34 @@ export const submitAssignment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const supabase = context.supabase as any;
     const student = await getStudentRow(supabase, context.userId);
-    if (!student) throw new Error("Student profile not found");
+    if (!student) throw new Error("Profil élève introuvable. Contactez le secrétariat de votre école.");
 
-    const { data: assignment } = await supabase
-      .from("assignments")
-      .select("id, title, class_id, due_date, allow_late, status, open_at, teacher_id")
-      .eq("id", data.assignment_id)
+    const assignment = await loadSubmittableAssignment(supabase, data.assignment_id, student);
+    const past = assignment.is_late;
+
+    if (!data.file_path && !(data.content && data.content.trim())) {
+      throw new Error("Ajoutez un texte ou un fichier avant d'envoyer votre travail.");
+    }
+
+    const { data: existing } = await supabase
+      .from("assignment_submissions")
+      .select("file_path, file_name, file_type, file_size")
+      .eq("assignment_id", data.assignment_id)
+      .eq("student_id", student.id)
       .maybeSingle();
-    if (!assignment) throw new Error("Devoir introuvable");
-    if (assignment.class_id !== student.class_id) throw new Error("Ce devoir n'est pas destiné à votre classe");
-    if (assignment.open_at && new Date(assignment.open_at) > new Date()) {
-      throw new Error("Ce devoir n'est pas encore ouvert");
-    }
-    const past = Boolean(assignment.due_date) && new Date(assignment.due_date) < new Date();
-    if (past && !assignment.allow_late) {
-      throw new Error("La date limite est dépassée : les remises tardives ne sont pas autorisées");
-    }
-    if (assignment.status !== "open") throw new Error("Ce devoir est clôturé");
 
     const { error } = await supabase.from("assignment_submissions").upsert(
       {
         assignment_id: data.assignment_id,
         student_id: student.id,
         content: data.content ?? null,
-        file_url: data.file_url ?? null,
+        file_path: data.file_path ?? existing?.file_path ?? null,
+        file_name: data.file_name ?? existing?.file_name ?? null,
+        file_type: data.file_type ?? existing?.file_type ?? null,
+        file_size: data.file_size ?? existing?.file_size ?? null,
         submitted_at: new Date().toISOString(),
         is_late: past,
+        status: past ? "late" : "submitted",
         grade: null,
         feedback: null,
         graded_at: null,
@@ -210,7 +264,7 @@ export const submitAssignment = createServerFn({ method: "POST" })
       },
       { onConflict: "assignment_id,student_id" as any },
     );
-    if (error) throw error;
+    if (error) throw new Error(`Votre remise n'a pas pu être enregistrée : ${error.message}`);
 
     const { data: teacher } = await supabase.from("teachers").select("user_id").eq("id", assignment.teacher_id).maybeSingle();
     if (teacher?.user_id) {
