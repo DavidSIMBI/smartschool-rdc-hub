@@ -1908,6 +1908,17 @@ export type Database = {
         Args: { _body: string; _title: string; _type: string; _user_id: string }
         Returns: undefined
       }
+      notify_user_as: {
+        Args: {
+          _body: string
+          _caller_id: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
+      owns_school_folder: { Args: { _path: string }; Returns: boolean }
     }
     Enums: {
       app_role:
