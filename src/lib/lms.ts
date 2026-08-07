@@ -20,7 +20,10 @@ export const ALLOWED_EXTENSIONS: Record<string, string[]> = {
   reference: ["pdf", "doc", "docx", "ppt", "pptx", "zip", "xls", "xlsx", "csv", "txt"],
 };
 
-export const SUBMISSION_EXTENSIONS = ["pdf", "doc", "docx", "png", "jpg", "jpeg", "webp", "zip"];
+export const SUBMISSION_EXTENSIONS = [
+  "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx",
+  "jpg", "jpeg", "png", "webp", "zip", "txt", "odt",
+];
 
 export const ASSIGNMENT_ATTACHMENT_EXTENSIONS = ["pdf", "doc", "docx", "ppt", "pptx", "zip", "png", "jpg", "jpeg", "webp"];
 
