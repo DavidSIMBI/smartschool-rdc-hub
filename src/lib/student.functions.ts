@@ -214,7 +214,9 @@ export const submitAssignment = createServerFn({ method: "POST" })
 
     const { data: teacher } = await supabase.from("teachers").select("user_id").eq("id", assignment.teacher_id).maybeSingle();
     if (teacher?.user_id) {
-      await supabase.rpc("notify_school_user", {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await (supabaseAdmin as any).rpc("notify_user_as", {
+        _caller_id: context.userId,
         _user_id: teacher.user_id,
         _type: "submission",
         _title: "Nouvelle remise de devoir",
