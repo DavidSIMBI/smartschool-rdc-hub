@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { StudentShell } from "@/components/dashboard/StudentShell";
-import { listStudentAssignments, submitAssignment, prepareSubmissionUpload } from "@/lib/student.functions";
+import { listStudentAssignments, submitAssignment, prepareSubmissionUpload, getMySubmissionFileLink } from "@/lib/student.functions";
 import { uploadWithProgress } from "@/lib/storage-upload";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +23,16 @@ function AssignmentsPage() {
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+
+  async function openMyFile(submissionId: string) {
+    try {
+      const r: any = await getMySubmissionFileLink({ data: { submission_id: submissionId } });
+      window.open(r.url, "_blank", "noopener");
+    } catch (e) {
+      console.error("[student-assignments] file access failed", e);
+      toast.error("Impossible d'ouvrir ce fichier. Veuillez réessayer.");
+    }
+  }
 
   const submit = useMutation({
     mutationFn: (p: any) => submitAssignment({ data: p }),
@@ -109,10 +119,10 @@ function AssignmentsPage() {
                       <div className="mt-3 rounded-lg bg-secondary/50 p-3 text-sm">
                         <div className="text-xs text-muted-foreground">Remis le {new Date(sub.submitted_at).toLocaleString("fr-FR")}{sub.is_late ? " · en retard" : ""}</div>
                         {sub.content && <div className="whitespace-pre-wrap">{sub.content}</div>}
-                        {sub.file_url && (
-                          <a className="text-primary underline text-xs" href={sub.file_url} target="_blank" rel="noreferrer">
+                        {sub.file_path && (
+                          <button type="button" className="text-primary underline text-xs" onClick={() => openMyFile(sub.id)}>
                             {sub.file_name ?? "Voir le fichier"}
-                          </a>
+                          </button>
                         )}
                         {sub.grade !== null && <div className="mt-1 text-xs">Note: <strong>{sub.grade}</strong></div>}
                         {sub.feedback && <div className="mt-1 text-xs italic">Retour: {sub.feedback}</div>}
