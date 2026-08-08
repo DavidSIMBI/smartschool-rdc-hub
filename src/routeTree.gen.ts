@@ -71,7 +71,6 @@ import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboa
 import { Route as DashboardStudentAssistantRouteImport } from './routes/dashboard.student.assistant'
 import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
 import { Route as DashboardStudentAnnouncementsRouteImport } from './routes/dashboard.student.announcements'
-import { Route as ApiPublicTmpSignRouteImport } from './routes/api/public/tmp-sign'
 import { Route as ApiPublicSubmissionFileRouteImport } from './routes/api/public/submission-file'
 import { Route as DashboardSuperAdminSchoolsIdRouteImport } from './routes/dashboard.super-admin.schools.$id'
 
@@ -417,11 +416,6 @@ const DashboardStudentAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => DashboardStudentRoute,
   } as any)
-const ApiPublicTmpSignRoute = ApiPublicTmpSignRouteImport.update({
-  id: '/api/public/tmp-sign',
-  path: '/api/public/tmp-sign',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicSubmissionFileRoute = ApiPublicSubmissionFileRouteImport.update({
   id: '/api/public/submission-file',
   path: '/api/public/submission-file',
@@ -457,7 +451,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
   '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
-  '/api/public/tmp-sign': typeof ApiPublicTmpSignRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -521,7 +514,6 @@ export interface FileRoutesByTo {
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
   '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
-  '/api/public/tmp-sign': typeof ApiPublicTmpSignRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -589,7 +581,6 @@ export interface FileRoutesById {
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
   '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
-  '/api/public/tmp-sign': typeof ApiPublicTmpSignRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -658,7 +649,6 @@ export interface FileRouteTypes {
     | '/dashboard/teachers'
     | '/dashboard/timetable'
     | '/api/public/submission-file'
-    | '/api/public/tmp-sign'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -722,7 +712,6 @@ export interface FileRouteTypes {
     | '/dashboard/teachers'
     | '/dashboard/timetable'
     | '/api/public/submission-file'
-    | '/api/public/tmp-sign'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -789,7 +778,6 @@ export interface FileRouteTypes {
     | '/dashboard/teachers'
     | '/dashboard/timetable'
     | '/api/public/submission-file'
-    | '/api/public/tmp-sign'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -857,7 +845,6 @@ export interface RootRouteChildren {
   DashboardTeachersRoute: typeof DashboardTeachersRoute
   DashboardTimetableRoute: typeof DashboardTimetableRoute
   ApiPublicSubmissionFileRoute: typeof ApiPublicSubmissionFileRoute
-  ApiPublicTmpSignRoute: typeof ApiPublicTmpSignRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1296,13 +1283,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentAnnouncementsRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
-    '/api/public/tmp-sign': {
-      id: '/api/public/tmp-sign'
-      path: '/api/public/tmp-sign'
-      fullPath: '/api/public/tmp-sign'
-      preLoaderRoute: typeof ApiPublicTmpSignRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/submission-file': {
       id: '/api/public/submission-file'
       path: '/api/public/submission-file'
@@ -1466,8 +1446,17 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardTeachersRoute: DashboardTeachersRoute,
   DashboardTimetableRoute: DashboardTimetableRoute,
   ApiPublicSubmissionFileRoute: ApiPublicSubmissionFileRoute,
-  ApiPublicTmpSignRoute: ApiPublicTmpSignRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
