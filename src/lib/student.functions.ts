@@ -157,12 +157,8 @@ export const listStudentAssignments = createServerFn({ method: "GET" })
     const bySub: Record<string, any> = {};
     for (const s of (subs ?? []) as any[]) {
       const visible = s.grade_published ? s : { ...s, grade: null, feedback: null };
-      if (visible.file_path) {
-        const { data: signed } = await supabase.storage
-          .from("teacher-materials")
-          .createSignedUrl(visible.file_path, 60 * 60);
-        visible.file_url = signed?.signedUrl ?? visible.file_url ?? null;
-      }
+      // Files are served through the app endpoint, never as raw storage URLs.
+      visible.file_url = null;
       bySub[s.assignment_id] = visible;
     }
     return (assignments ?? []).map((a: any) => ({ ...a, submission: bySub[a.id] ?? null }));
@@ -176,6 +172,36 @@ const submitSchema = z.object({
   file_type: z.string().optional().nullable(),
   file_size: z.number().optional().nullable(),
 });
+
+/** Short-lived, app-internal link to the student's OWN submitted file. */
+export const getMySubmissionFileLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ submission_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    const student = await getStudentRow(supabase, context.userId);
+    if (!student) throw new Error("Profil élève introuvable.");
+    const { data: row, error } = await supabase
+      .from("assignment_submissions")
+      .select("id, student_id, file_path, file_name, file_type")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (error) {
+      console.error("[getMySubmissionFileLink] lookup failed", error);
+      throw new Error("Impossible d'ouvrir ce fichier. Veuillez réessayer.");
+    }
+    if (!row || row.student_id !== student.id || !row.file_path) {
+      throw new Error("Fichier introuvable.");
+    }
+    const { signFileToken } = await import("@/lib/file-token.server");
+    const token = await signFileToken({
+      b: "teacher-materials",
+      p: row.file_path,
+      n: row.file_name ?? "remise",
+      t: row.file_type ?? null,
+    });
+    return { url: `/api/public/submission-file?t=${encodeURIComponent(token)}`, file_name: row.file_name ?? "remise" };
+  });
 
 /**
  * Validates that the signed-in student may submit to this assignment and
