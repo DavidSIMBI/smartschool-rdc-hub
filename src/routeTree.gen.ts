@@ -71,6 +71,7 @@ import { Route as DashboardStudentAttendanceRouteImport } from './routes/dashboa
 import { Route as DashboardStudentAssistantRouteImport } from './routes/dashboard.student.assistant'
 import { Route as DashboardStudentAssignmentsRouteImport } from './routes/dashboard.student.assignments'
 import { Route as DashboardStudentAnnouncementsRouteImport } from './routes/dashboard.student.announcements'
+import { Route as ApiPublicSubmissionFileRouteImport } from './routes/api/public/submission-file'
 import { Route as DashboardSuperAdminSchoolsIdRouteImport } from './routes/dashboard.super-admin.schools.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -415,6 +416,11 @@ const DashboardStudentAnnouncementsRoute =
     path: '/announcements',
     getParentRoute: () => DashboardStudentRoute,
   } as any)
+const ApiPublicSubmissionFileRoute = ApiPublicSubmissionFileRouteImport.update({
+  id: '/api/public/submission-file',
+  path: '/api/public/submission-file',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardSuperAdminSchoolsIdRoute =
   DashboardSuperAdminSchoolsIdRouteImport.update({
     id: '/$id',
@@ -444,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
+  '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -506,6 +513,7 @@ export interface FileRoutesByTo {
   '/dashboard/students': typeof DashboardStudentsRoute
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
+  '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -572,6 +580,7 @@ export interface FileRoutesById {
   '/dashboard/teacher': typeof DashboardTeacherRouteWithChildren
   '/dashboard/teachers': typeof DashboardTeachersRoute
   '/dashboard/timetable': typeof DashboardTimetableRoute
+  '/api/public/submission-file': typeof ApiPublicSubmissionFileRoute
   '/dashboard/student/announcements': typeof DashboardStudentAnnouncementsRoute
   '/dashboard/student/assignments': typeof DashboardStudentAssignmentsRoute
   '/dashboard/student/assistant': typeof DashboardStudentAssistantRoute
@@ -639,6 +648,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher'
     | '/dashboard/teachers'
     | '/dashboard/timetable'
+    | '/api/public/submission-file'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -701,6 +711,7 @@ export interface FileRouteTypes {
     | '/dashboard/students'
     | '/dashboard/teachers'
     | '/dashboard/timetable'
+    | '/api/public/submission-file'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -766,6 +777,7 @@ export interface FileRouteTypes {
     | '/dashboard/teacher'
     | '/dashboard/teachers'
     | '/dashboard/timetable'
+    | '/api/public/submission-file'
     | '/dashboard/student/announcements'
     | '/dashboard/student/assignments'
     | '/dashboard/student/assistant'
@@ -832,6 +844,7 @@ export interface RootRouteChildren {
   DashboardTeacherRoute: typeof DashboardTeacherRouteWithChildren
   DashboardTeachersRoute: typeof DashboardTeachersRoute
   DashboardTimetableRoute: typeof DashboardTimetableRoute
+  ApiPublicSubmissionFileRoute: typeof ApiPublicSubmissionFileRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1270,6 +1283,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardStudentAnnouncementsRouteImport
       parentRoute: typeof DashboardStudentRoute
     }
+    '/api/public/submission-file': {
+      id: '/api/public/submission-file'
+      path: '/api/public/submission-file'
+      fullPath: '/api/public/submission-file'
+      preLoaderRoute: typeof ApiPublicSubmissionFileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard/super-admin/schools/$id': {
       id: '/dashboard/super-admin/schools/$id'
       path: '/$id'
@@ -1425,6 +1445,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardTeacherRoute: DashboardTeacherRouteWithChildren,
   DashboardTeachersRoute: DashboardTeachersRoute,
   DashboardTimetableRoute: DashboardTimetableRoute,
+  ApiPublicSubmissionFileRoute: ApiPublicSubmissionFileRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

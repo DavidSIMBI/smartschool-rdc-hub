@@ -964,16 +964,10 @@ export const listSubmissions = createServerFn({ method: "POST" })
       supabase.from("students").select("id, first_name, last_name, matricule, user_id").eq("class_id", assignment.class_id).order("last_name"),
       supabase.from("assignment_submissions").select("*").eq("assignment_id", data.id),
     ]);
-    const withUrls = await Promise.all(
-      ((submissions ?? []) as any[]).map(async (s) => {
-        if (!s.file_path) return s;
-        const { data: signed } = await supabase.storage
-          .from("teacher-materials")
-          .createSignedUrl(s.file_path, 60 * 60);
-        return { ...s, file_url: signed?.signedUrl ?? s.file_url ?? null };
-      }),
-    );
-    return { assignment, students: students ?? [], submissions: withUrls };
+    // No raw storage URLs are returned: files are served through /api/public/submission-file
+    // with a short-lived token issued by getSubmissionFileLink after authorization.
+    const rows = ((submissions ?? []) as any[]).map(({ file_url: _ignored, ...s }) => s);
+    return { assignment, students: students ?? [], submissions: rows };
   });
 
 const gradeSchema = z.object({
@@ -982,6 +976,49 @@ const gradeSchema = z.object({
   feedback: z.string().nullable().optional(),
   publish: z.boolean().default(false),
 });
+
+/** Issues a short-lived, app-internal link for one submission file (no raw storage URL). */
+export const getSubmissionFileLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ submission_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    // RLS on assignment_submissions already restricts rows to the teacher's assignments.
+    const { data: row, error } = await supabase
+      .from("assignment_submissions")
+      .select("id, file_path, file_name, file_type, assignment_id")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (error) {
+      console.error("[getSubmissionFileLink] lookup failed", error);
+      throw new Error("Impossible d'ouvrir cette remise. Veuillez réessayer.");
+    }
+    if (!row?.file_path) throw new Error("Aucun fichier joint à cette remise.");
+
+    const teacher = await getTeacherRow(supabase, context.userId);
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, teacher_id, class_id")
+      .eq("id", row.assignment_id)
+      .maybeSingle();
+    if (!assignment) throw new Error("Devoir introuvable.");
+    if (teacher && assignment.teacher_id !== teacher.id) {
+      await assertTeachesClass(supabase, context.userId, assignment.class_id);
+    }
+
+    const { signFileToken } = await import("@/lib/file-token.server");
+    const token = await signFileToken({
+      b: "teacher-materials",
+      p: row.file_path,
+      n: row.file_name ?? "remise",
+      t: row.file_type ?? null,
+    });
+    return {
+      url: `/api/public/submission-file?t=${encodeURIComponent(token)}`,
+      file_name: row.file_name ?? "remise",
+      file_type: row.file_type ?? null,
+    };
+  });
 
 export const gradeSubmission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
