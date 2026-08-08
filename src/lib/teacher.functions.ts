@@ -983,6 +983,49 @@ const gradeSchema = z.object({
   publish: z.boolean().default(false),
 });
 
+/** Issues a short-lived, app-internal link for one submission file (no raw storage URL). */
+export const getSubmissionFileLink = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ submission_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const supabase = context.supabase as any;
+    // RLS on assignment_submissions already restricts rows to the teacher's assignments.
+    const { data: row, error } = await supabase
+      .from("assignment_submissions")
+      .select("id, file_path, file_name, file_type, assignment_id")
+      .eq("id", data.submission_id)
+      .maybeSingle();
+    if (error) {
+      console.error("[getSubmissionFileLink] lookup failed", error);
+      throw new Error("Impossible d'ouvrir cette remise. Veuillez réessayer.");
+    }
+    if (!row?.file_path) throw new Error("Aucun fichier joint à cette remise.");
+
+    const teacher = await getTeacherRow(supabase, context.userId);
+    const { data: assignment } = await supabase
+      .from("assignments")
+      .select("id, teacher_id, class_id")
+      .eq("id", row.assignment_id)
+      .maybeSingle();
+    if (!assignment) throw new Error("Devoir introuvable.");
+    if (teacher && assignment.teacher_id !== teacher.id) {
+      await assertTeachesClass(supabase, context.userId, assignment.class_id);
+    }
+
+    const { signFileToken } = await import("@/lib/file-token.server");
+    const token = await signFileToken({
+      b: "teacher-materials",
+      p: row.file_path,
+      n: row.file_name ?? "remise",
+      t: row.file_type ?? null,
+    });
+    return {
+      url: `/api/public/submission-file?t=${encodeURIComponent(token)}`,
+      file_name: row.file_name ?? "remise",
+      file_type: row.file_type ?? null,
+    };
+  });
+
 export const gradeSubmission = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => gradeSchema.parse(d))
