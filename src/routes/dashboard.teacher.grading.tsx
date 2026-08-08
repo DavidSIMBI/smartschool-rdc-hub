@@ -2,11 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { GraduationCap, Download, Send, CheckCircle2, Clock } from "lucide-react";
+import { GraduationCap, Download, Send, CheckCircle2, Clock, Eye, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { TeacherShell } from "@/components/dashboard/TeacherShell";
 import { Button } from "@/components/ui/button";
-import { listAssignments, listSubmissions, gradeSubmission, publishAssignmentGrades } from "@/lib/teacher.functions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatBytes } from "@/lib/lms";
+import { listAssignments, listSubmissions, gradeSubmission, publishAssignmentGrades, getSubmissionFileLink } from "@/lib/teacher.functions";
 
 export const Route = createFileRoute("/dashboard/teacher/grading")({
   head: () => ({
@@ -25,6 +27,33 @@ function GradingPage() {
   const subsFn = useServerFn(listSubmissions);
   const gradeFn = useServerFn(gradeSubmission);
   const publishFn = useServerFn(publishAssignmentGrades);
+  const linkFn = useServerFn(getSubmissionFileLink);
+  const [busyFile, setBusyFile] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ url: string; name: string; type: string | null } | null>(null);
+
+  async function openFile(submissionId: string, mode: "view" | "download") {
+    setBusyFile(submissionId);
+    try {
+      const r = (await linkFn({ data: { submission_id: submissionId } })) as any;
+      const type = (r.file_type ?? "") as string;
+      const previewable = type.startsWith("image/") || type === "application/pdf" || /\.(pdf|png|jpe?g|webp|gif)$/i.test(r.file_name ?? "");
+      if (mode === "view" && previewable) {
+        setPreview({ url: r.url, name: r.file_name, type: r.file_type });
+      } else {
+        const a = document.createElement("a");
+        a.href = `${r.url}&mode=download`;
+        a.download = r.file_name ?? "remise";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
+    } catch (e) {
+      console.error("[grading] submission file access failed", e);
+      toast.error("Impossible d'ouvrir cette remise. Veuillez réessayer.");
+    } finally {
+      setBusyFile(null);
+    }
+  }
 
   const { data: assignments } = useQuery({ queryKey: ["teacher", "assignments"], queryFn: () => listFn() });
   const [selected, setSelected] = useState<string>("");
@@ -89,6 +118,7 @@ function GradingPage() {
                 <th className="px-4 py-3 font-medium">Élève</th>
                 <th className="px-4 py-3 font-medium">Remise</th>
                 <th className="px-4 py-3 font-medium">Fichier</th>
+                <th className="px-4 py-3 font-medium">Statut</th>
                 <th className="px-4 py-3 font-medium">Note</th>
                 <th className="px-4 py-3 font-medium">Commentaire</th>
                 <th className="px-4 py-3"></th>
@@ -117,11 +147,28 @@ function GradingPage() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {sub?.file_url ? (
-                        <a href={sub.file_url} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1 text-xs">
-                          <Download className="h-3 w-3" /> {sub.file_name ?? "Télécharger"}
-                        </a>
+                      {sub?.file_path ? (
+                        <div className="space-y-1 text-xs">
+                          <div className="inline-flex items-center gap-1 font-medium"><FileText className="h-3 w-3" /> {sub.file_name ?? "Fichier"}</div>
+                          <div className="text-muted-foreground">{sub.file_type ?? "type inconnu"} · {formatBytes(sub.file_size)}</div>
+                          <div className="flex gap-1 pt-1">
+                            <Button size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs" disabled={busyFile === sub.id} onClick={() => openFile(sub.id, "view")}>
+                              {busyFile === sub.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <Eye className="h-3 w-3" />} Voir
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-7 gap-1 px-2 text-xs" disabled={busyFile === sub.id} onClick={() => openFile(sub.id, "download")}>
+                              <Download className="h-3 w-3" /> Télécharger
+                            </Button>
+                          </div>
+                        </div>
                       ) : <span className="text-muted-foreground text-xs">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-xs">
+                      {sub ? (
+                        <>
+                          <div>{sub.grade_published ? "Rendu à l'élève" : sub.graded_at ? "Corrigé" : "Reçu"}</div>
+                          <div className={sub.is_late ? "text-amber-600" : "text-emerald-600"}>{sub.is_late ? "En retard" : "À temps"}</div>
+                        </>
+                      ) : <span className="text-muted-foreground">Non remis</span>}
                     </td>
                     <td className="px-4 py-3">
                       <input
@@ -156,6 +203,26 @@ function GradingPage() {
           </table>
         </div>
       )}
+
+      <Dialog open={Boolean(preview)} onOpenChange={(o) => !o && setPreview(null)}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="truncate">{preview?.name}</DialogTitle>
+          </DialogHeader>
+          {preview && (
+            (preview.type ?? "").startsWith("image/") || /\.(png|jpe?g|webp|gif)$/i.test(preview.name) ? (
+              <img src={preview.url} alt={preview.name} className="max-h-[70vh] w-full rounded-lg object-contain" />
+            ) : (
+              <iframe src={preview.url} title={preview.name} className="h-[70vh] w-full rounded-lg border border-border" />
+            )
+          )}
+          {preview && (
+            <a href={`${preview.url}&mode=download`} download={preview.name} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+              <Download className="h-4 w-4" /> Télécharger le fichier
+            </a>
+          )}
+        </DialogContent>
+      </Dialog>
     </TeacherShell>
   );
 }
