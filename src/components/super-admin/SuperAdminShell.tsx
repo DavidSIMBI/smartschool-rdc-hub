@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
 import { useAuth } from "@/lib/auth-context";
+import { MobileNavDrawer } from "@/components/dashboard/MobileNavDrawer";
 
 interface NavItem { to: string; label: string; icon: LucideIcon }
 
@@ -51,7 +52,7 @@ export function SuperAdminShell({
   const navigate = useNavigate();
   const loc = useLocation();
   return (
-    <div className="min-h-screen flex bg-secondary/30">
+    <div className="min-h-screen flex bg-secondary/30 overflow-x-hidden">
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-background">
         <div className="p-5 border-b border-border flex items-center justify-between">
           <Logo />
@@ -95,14 +96,34 @@ export function SuperAdminShell({
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex items-center justify-between gap-4 px-4 sm:px-8 border-b border-border bg-background">
-          <div className="min-w-0">
-            <h1 className="text-lg font-semibold truncate">{title}</h1>
-            {subtitle && (
-              <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
-            )}
+        <header className="min-h-16 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 border-b border-border bg-background sticky top-0 z-20">
+          <div className="flex min-w-0 items-center gap-3">
+            <MobileNavDrawer
+              nav={superAdminNav}
+              badge="Super"
+              rootPath="/dashboard/super-admin"
+              extra={
+                onSearchChange ? (
+                  <div className="relative">
+                    <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={search ?? ""}
+                      onChange={(e) => onSearchChange(e.target.value)}
+                      placeholder="Rechercher…"
+                      className="h-11 pl-9"
+                    />
+                  </div>
+                ) : undefined
+              }
+            />
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-semibold">{title}</h1>
+              {subtitle && (
+                <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {onSearchChange && (
               <div className="relative hidden md:block">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +142,7 @@ export function SuperAdminShell({
             <LangThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-8 overflow-auto">{children}</main>
+        <main className="flex-1 min-w-0 p-4 sm:p-8 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

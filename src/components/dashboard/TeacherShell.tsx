@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
 import { useAuth } from "@/lib/auth-context";
+import { MobileNavDrawer } from "@/components/dashboard/MobileNavDrawer";
 
 interface NavItem { to: string; label: string; icon: LucideIcon }
 
@@ -63,7 +64,7 @@ export function TeacherShell({
   const loc = useLocation();
 
   return (
-    <div className="min-h-screen flex bg-secondary/30">
+    <div className="min-h-screen flex bg-secondary/30 overflow-x-hidden">
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-background/80 backdrop-blur-sm">
         <div className="p-5 border-b border-border flex items-center justify-between">
           <Logo />
@@ -104,18 +105,21 @@ export function TeacherShell({
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-          <div>
-            <h1 className="text-lg font-semibold">{title}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        <header className="min-h-16 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+          <div className="flex min-w-0 items-center gap-3">
+            <MobileNavDrawer nav={teacherNav} badge="Prof" rootPath="/dashboard/teacher" />
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-semibold">{title}</h1>
+              {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             {actions}
-            <span className="hidden sm:inline text-sm text-muted-foreground">{user?.email}</span>
+            <span className="hidden lg:inline text-sm text-muted-foreground">{user?.email}</span>
             <LangThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-8 overflow-auto animate-in fade-in duration-300">
+        <main className="flex-1 min-w-0 p-4 sm:p-8 overflow-x-hidden animate-in fade-in duration-300">
           {children}
         </main>
       </div>

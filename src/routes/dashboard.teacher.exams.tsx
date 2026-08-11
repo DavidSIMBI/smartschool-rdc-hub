@@ -171,7 +171,7 @@ function ExamsPage() {
                 <ExamQuestionEditor exam={examDetail.exam} />
               ) : (
               <div className="overflow-hidden rounded-xl border border-border">
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
                   <thead className="bg-secondary/40 text-left">
                     <tr>
                       <th className="px-4 py-2 font-medium">Élève</th>
@@ -200,7 +200,7 @@ function ExamsPage() {
                       );
                     })}
                   </tbody>
-                </table>
+                </table></div>
               </div>
               )}
             </>
