@@ -136,9 +136,10 @@ function AssignmentsPage() {
                 {openId === a.id && (
                   <div className="mt-4 space-y-3">
                     <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Votre réponse…" rows={4} />
-                    <label className="inline-flex items-center gap-2 text-sm text-primary cursor-pointer">
-                      <Upload className="h-4 w-4" /> Joindre un fichier (PDF, Word, PowerPoint, Excel, image, ZIP — max 50 Mo)
-                      <input type="file" hidden disabled={busy} accept={SUBMISSION_EXTENSIONS.map((x) => `.${x}`).join(",")} onChange={(e) => {
+                    <label className="flex min-h-11 w-full items-center gap-2 rounded-lg border border-dashed border-primary/40 px-3 py-3 text-sm text-primary cursor-pointer active:bg-primary/5">
+                      <Upload className="h-4 w-4 shrink-0" />
+                      <span className="min-w-0">Joindre un fichier (PDF, Word, PowerPoint, Excel, image, ZIP — max 50 Mo)</span>
+                      <input type="file" hidden disabled={busy} onChange={(e) => {
                         const f = e.target.files?.[0] ?? null;
                         e.target.value = "";
                         handleSubmit(a.id, f);
@@ -149,9 +150,9 @@ function AssignmentsPage() {
                         <div className="h-full bg-primary transition-all" style={{ width: `${progress}%` }} />
                       </div>
                     )}
-                    <div className="flex gap-2">
-                      <Button size="sm" disabled={busy || submit.isPending} onClick={() => handleSubmit(a.id, null)}>Envoyer texte</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setOpenId(null)}>Annuler</Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button size="sm" className="h-11 sm:h-9" disabled={busy || submit.isPending} onClick={() => handleSubmit(a.id, null)}>Envoyer texte</Button>
+                      <Button size="sm" className="h-11 sm:h-9" variant="ghost" onClick={() => setOpenId(null)}>Annuler</Button>
                     </div>
                   </div>
                 )}
