@@ -53,7 +53,7 @@ function AttendancePage() {
       )}
 
       <div className="rounded-2xl border border-border bg-background/70 backdrop-blur-sm overflow-hidden mt-6">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
           <thead className="bg-secondary/50 text-xs uppercase tracking-wider text-muted-foreground">
             <tr><th className="text-left p-3">Date</th><th className="text-left p-3">Matière</th><th className="text-left p-3">Statut</th></tr>
           </thead>
@@ -77,7 +77,7 @@ function AttendancePage() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </StudentShell>
   );

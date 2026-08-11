@@ -112,7 +112,7 @@ function GradingPage() {
             {assignment?.due_date ? ` · échéance ${new Date(assignment.due_date).toLocaleString("fr-FR")}` : ""}
             {assignment?.allow_late ? " · remises tardives autorisées" : ""}
           </div>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead className="bg-secondary/20 text-left">
               <tr>
                 <th className="px-4 py-3 font-medium">Élève</th>
@@ -200,7 +200,7 @@ function GradingPage() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
 

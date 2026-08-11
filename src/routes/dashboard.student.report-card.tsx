@@ -51,7 +51,7 @@ function ReportCardPage() {
         {summary.length === 0 ? (
           <div className="text-center text-muted-foreground py-10">Aucun résultat publié pour l'instant.</div>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wider text-muted-foreground">
                 <th className="text-left py-2">Matière</th>
@@ -68,7 +68,7 @@ function ReportCardPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
 
         <div className="mt-8 grid sm:grid-cols-2 gap-4 text-sm">

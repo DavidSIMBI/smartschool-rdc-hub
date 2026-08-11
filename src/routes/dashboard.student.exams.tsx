@@ -49,7 +49,7 @@ function ExamsPage() {
         <div className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">Aucun examen planifié.</div>
       ) : (
         <div className="rounded-2xl border border-border bg-background/70 backdrop-blur-sm overflow-hidden">
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto"><table className="w-full min-w-[640px] text-sm">
             <thead className="bg-secondary/50 text-xs uppercase tracking-wider text-muted-foreground">
               <tr>
                 <th className="text-left p-3">Titre</th>
@@ -77,7 +77,7 @@ function ExamsPage() {
                 );
               })}
             </tbody>
-          </table>
+          </table></div>
         </div>
       )}
     </StudentShell>
