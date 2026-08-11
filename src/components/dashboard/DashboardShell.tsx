@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/site/Logo";
 import { LangThemeToggle } from "@/components/site/LangThemeToggle";
 import { useAuth } from "@/lib/auth-context";
+import { MobileNavDrawer } from "@/components/dashboard/MobileNavDrawer";
 
 export interface NavItem {
   to: string;
@@ -46,7 +47,7 @@ export function DashboardShell({ title, subtitle, nav = commonNav, children }: {
   const loc = useLocation();
 
   return (
-    <div className="min-h-screen flex bg-secondary/30">
+    <div className="min-h-screen flex bg-secondary/30 overflow-x-hidden">
       <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-border bg-background">
         <div className="p-5 border-b border-border">
           <Logo />
@@ -82,17 +83,20 @@ export function DashboardShell({ title, subtitle, nav = commonNav, children }: {
         </div>
       </aside>
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 flex items-center justify-between px-4 sm:px-8 border-b border-border bg-background">
-          <div>
-            <h1 className="text-lg font-semibold">{title}</h1>
-            {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
+        <header className="min-h-16 flex flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-8 border-b border-border bg-background sticky top-0 z-20">
+          <div className="flex min-w-0 items-center gap-3">
+            <MobileNavDrawer nav={nav} badge="Admin" rootPath="/dashboard/admin" />
+            <div className="min-w-0">
+              <h1 className="truncate text-base sm:text-lg font-semibold">{title}</h1>
+              {subtitle && <p className="truncate text-xs text-muted-foreground">{subtitle}</p>}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline text-sm text-muted-foreground">{user?.email}</span>
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span className="hidden lg:inline text-sm text-muted-foreground">{user?.email}</span>
             <LangThemeToggle />
           </div>
         </header>
-        <main className="flex-1 p-4 sm:p-8 overflow-auto">{children}</main>
+        <main className="flex-1 min-w-0 p-4 sm:p-8 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );
